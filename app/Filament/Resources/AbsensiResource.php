@@ -1,0 +1,414 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\AbsensiResource\Pages;
+use App\Filament\Resources\AbsensiResource\RelationManagers;
+use App\Models\Absensi;
+use App\Models\Kelas;
+use App\Models\Sekolah;
+use App\Models\Siswa;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+
+class AbsensiResource extends Resource
+{
+    protected static ?string $model = Absensi::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+
+    protected static ?string $navigationGroup = 'Manajemen Sekolah';
+
+    protected static ?int $navigationSort = 4;
+
+    public static function form(Form $form): Form
+    {
+        return $form
+        ->schema([
+            Forms\Components\Section::make('Detail Absensi')
+            ->description('Masukan data absensi siswa')
+            ->schema([
+                Forms\Components\Select::make('sekolah_id')
+                    ->required()
+                    ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                    ->searchable()
+                    ->default(fn () => Auth::user()->sekolah_id ?? null)
+                    ->hidden(fn () => Auth::user()->sekolah_id !== null)
+                    ->preload()
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, callable $get) {
+                        // Reset semua nilai terkait
+                        $set('uid', null);
+                        $set('tanggal', null);
+                        $set('waktu', null);
+                        $set('is_loading_datetime', false); // pastikan nilai default false
+
+                        // Jika tidak ada sekolah yang dipilih, langsung return
+                        if (!$sekolahId = $get('sekolah_id')) {
+                            return;
+                        }
+
+                        // Cek dan set default tanggal & waktu berdasarkan timezone sekolah
+                        $timezone = cache()->remember(
+                            "sekolah_timezone_{$sekolahId}",
+                            now()->addMinutes(30),
+                            fn() => Sekolah::find($sekolahId)?->timezone
+                        );
+
+                        if ($timezone) {
+                            $timezone = match ($timezone) {
+                                'WIB' => 'Asia/Jakarta',
+                                'WITA' => 'Asia/Makassar',
+                                'WIT' => 'Asia/Jayapura',
+                                default => 'Asia/Jakarta'
+                            };
+
+                            $now = now()->timezone($timezone);
+                            $set('tanggal', $now->format('Y-m-d'));
+                            $set('waktu', $now->format('H:i'));
+                        }
+
+                    }),
+
+                Forms\Components\Select::make('uid')
+                    ->required()
+                    ->label('Siswa')
+                    ->options(fn (Get $get): Collection =>
+                        $get('sekolah_id')
+                            ? cache()->remember(
+                                "siswa_options_{$get('sekolah_id')}",
+                                now()->addMinutes(5),
+                                fn() => Siswa::query()
+                                    ->where('sekolah_id', $get('sekolah_id'))
+                                    ->get()
+                                    ->mapWithKeys(fn ($siswa) => [
+                                        $siswa->uid => "{$siswa->nama} - {$siswa->kelas->nama}"
+                                    ])
+                            )
+                            : collect()
+                    )
+                    ->searchable()
+                    ->preload(),
+
+                Forms\Components\DatePicker::make('tanggal')
+                    ->required()
+                    ->default(function () {
+                        if (Auth::user()->sekolah_id) {
+
+                            $timezone = cache()->remember(
+                                "sekolah_timezone_" . Auth::user()->sekolah_id,
+                                now()->addMinutes(30),
+                                fn() => Auth::user()->sekolah->timezone
+                            );
+
+                            if ($timezone) {
+                                $timezone = match ($timezone) {
+                                    'WIB' => 'Asia/Jakarta',
+                                    'WITA' => 'Asia/Makassar',
+                                    'WIT' => 'Asia/Jayapura',
+                                    default => 'Asia/Jakarta'
+                                };
+
+                                return now()->timezone($timezone)->format('Y-m-d');
+                            }
+
+                            return now()->format('Y-m-d'); // fallback ke default timezone
+                        }
+
+                        return null;
+                    })
+                    ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')),
+
+                Forms\Components\TimePicker::make('waktu')
+                    ->required()
+                    ->default(function () {
+                        if (Auth::user()->sekolah_id) {
+                            $timezone = cache()->remember(
+                                "sekolah_timezone_" . Auth::user()->sekolah_id,
+                                now()->addMinutes(30),
+                                fn() => Auth::user()->sekolah->timezone
+                            );
+
+                            if ($timezone) {
+                                $timezone = match ($timezone) {
+                                    'WIB' => 'Asia/Jakarta',
+                                    'WITA' => 'Asia/Makassar',
+                                    'WIT' => 'Asia/Jayapura',
+                                    default => 'Asia/Jakarta'
+                                };
+
+                                return now()->timezone($timezone)->format('H:i');
+                            }
+
+                            return now()->format('H:i');
+                        }
+
+                        return null;
+                    })
+                    ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')), // Convert ke boolean
+            ])->columns(2)
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                // Timestamp Columns
+                Tables\Columns\TextColumn::make('tanggal')
+                    ->date()
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('waktu')
+                    ->time()
+                    ->sortable()
+                    ->searchable(),
+
+                // School and Student Info
+                Tables\Columns\TextColumn::make('sekolah.nama')
+                    ->url(fn ($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
+                    ->hidden(fn () => Auth::user()->sekolah_id != null)
+                    ->icon('heroicon-m-building-library')
+                    ->color('success')
+                    ->badge()
+                    ->sortable()
+                    ->searchable()
+                    ->tooltip('Klik untuk melihat detail sekolah'),
+
+                Tables\Columns\TextColumn::make('siswa.nama')
+                    ->url(fn ($record) => route('filament.admin.resources.siswas.view', ['record' => $record->siswa->id]))
+                    ->icon('heroicon-m-academic-cap')
+                    ->color('primary')
+                    ->badge()
+                    ->sortable()
+                    ->searchable()
+                    ->tooltip('Klik untuk melihat detail siswa'),
+
+                Tables\Columns\TextColumn::make('siswa.kelas.nama')
+                    ->url(fn ($record) => route('filament.admin.resources.kelas.view', ['record' => $record->siswa->kelas->id]))
+                    ->icon('heroicon-m-user-group')
+                    ->color('primary')
+                    ->badge()
+                    ->searchable()
+                    ->sortable()
+                    ->tooltip('Klik untuk melihat detail kelas siswa'),
+
+                // Attendance Status
+                Tables\Columns\TextColumn::make('keterangan')
+                    ->color(fn ($record): string => match ($record->keterangan) {
+                        'Masuk', 'Pulang' => 'success',
+                        'Terlambat' => 'danger',
+                        default => 'gray',
+                    })
+                    ->icon(fn ($record): string => match ($record->keterangan) {
+                        'Masuk' => 'heroicon-m-arrow-right-circle',
+                        'Pulang' => 'heroicon-m-arrow-left-circle',
+                        'Terlambat' => 'heroicon-m-clock',
+                        default => 'heroicon-m-question-mark-circle',
+                    })
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+
+                // Additional Info
+                Tables\Columns\TextColumn::make('uid')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultSort('tanggal')
+            ->filters([
+                // Date & Time Filters
+                Filter::make('date_range')
+                    ->form([
+                        Forms\Components\DatePicker::make('from_date')
+                            ->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('until_date')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from_date'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date)
+                            )
+                            ->when(
+                                $data['until_date'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date)
+                            );
+                    })
+                    ->columns(2)->columnSpan(2),
+
+                // School & Class Filters
+                SelectFilter::make('sekolah')
+                    ->relationship('sekolah', 'nama')
+                    ->label('Sekolah')
+                    ->searchable()
+                    ->preload()
+                    ->native(false),
+
+                    Filter::make('waktu')
+                    ->form([
+                        Forms\Components\TextInput::make('waktu_from')
+                            ->label('Dari Jam')
+                            ->type('time'),
+                        Forms\Components\TextInput::make('waktu_until')
+                            ->label('Sampai Jam')
+                            ->type('time'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['waktu_from'],
+                                fn (Builder $query, $time): Builder => $query->whereTime('waktu', '>=', $time)
+                            )
+                            ->when(
+                                $data['waktu_until'],
+                                fn (Builder $query, $time): Builder => $query->whereTime('waktu', '<=', $time)
+                            );
+                    })
+                    ->columns(2)->columnSpan(2),
+
+                SelectFilter::make('kelas')
+                    ->label('Kelas')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->options(function () {
+                        // Mengambil semua kelas jika user tidak memiliki sekolah_id atau vendor_id
+                        if (!Auth::user()->sekolah_id && !Auth::user()->vendor_id) {
+                            return Kelas::query()
+                                ->with('sekolah') // Mengambil relasi sekolah
+                                ->get()
+                                ->mapWithKeys(function ($kelas) {
+                                    return [
+                                        $kelas->id => "{$kelas->nama} - {$kelas->sekolah->nama}" // Menampilkan nama kelas dan nama sekolah
+                                    ];
+                                });
+                        }
+
+                        // Mengambil kelas berdasarkan sekolah_id jika ada
+                        return Kelas::query()
+                            ->where('sekolah_id', Auth::user()->sekolah_id)
+                            ->pluck('nama', 'id');
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'],
+                            fn (Builder $query, $kelasId): Builder => $query->whereHas('siswa', function (Builder $q) use ($kelasId) {
+                                $q->where('kelas_id', $kelasId);
+                            })
+                        );
+                    }),
+
+                // Student Filter
+                Filter::make('siswa')
+                    ->form([
+                        Forms\Components\TextInput::make('siswa_nama')
+                            ->label('Nama Siswa')
+                            ->placeholder('Cari nama siswa...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['siswa_nama'],
+                            fn (Builder $query, $value): Builder => $query->whereHas('siswa', fn ($q) =>
+                                $q->where('nama', 'like', "%{$value}%")
+                            )
+                        );
+                    }),
+
+                // Attendance Status Filter
+                SelectFilter::make('keterangan')
+                    ->label('Status Kehadiran')
+                    ->options([
+                        'Masuk' => 'Masuk',
+                        'Pulang' => 'Pulang',
+                        'Terlambat' => 'Terlambat'
+                    ])
+                    ->native(false),
+
+                // UID Filter
+                Filter::make('uid')
+                    ->form([
+                        Forms\Components\TextInput::make('uid')
+                            ->label('UID')
+                            ->placeholder('Cari UID...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['uid'],
+                            fn (Builder $query, $value): Builder => $query->where('uid', 'like', "%{$value}%")
+                        );
+                    }),
+            ], layout: FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListAbsensis::route('/'),
+            'create' => Pages\CreateAbsensi::route('/create'),
+            'view' => Pages\ViewAbsensi::route('/{record}'),
+            'edit' => Pages\EditAbsensi::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = Auth::user();
+
+        if ($user instanceof \App\Models\User) {
+            if ($user && $user->hasRole('admin_sekolah') || $user->hasRole('sekoalah')) {
+                // If user is 'admin' or 'sekolah', filter by their sekolah_id
+                $query->where('sekolah_id', $user->sekolah_id);
+            }
+        }
+
+        return $query;
+    }
+}
