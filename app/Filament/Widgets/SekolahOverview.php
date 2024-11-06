@@ -32,7 +32,7 @@ class SekolahOverview extends BaseWidget
 
         return [
             Stat::make('Total Pengguna', User::where('sekolah_id', Auth::user()->sekolah_id)->count())
-                ->description(User::where('status', true)->count(). " Pengguna aktif")
+                ->description(User::where('status', true)->where('sekolah_id', Auth::user()->sekolah_id)->count(). " Pengguna aktif")
                 ->descriptionIcon('heroicon-m-user', IconPosition::Before)
                 ->chart([7, 2, 10, 3, 15, 4, 17])
                 ->color('success'),

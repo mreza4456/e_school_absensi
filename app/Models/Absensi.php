@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Absensi extends Model
 {
-    use HasUuids;
-
     protected $guarded = [];
 
     public function sekolah(): BelongsTo

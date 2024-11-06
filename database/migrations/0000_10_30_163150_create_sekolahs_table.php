@@ -3,13 +3,14 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('sekolahs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(Str::uuid());
             // Personal information
             $table->integer('npsn');
             $table->string('nama');
@@ -23,8 +24,6 @@ return new class extends Migration
             $table->foreign('provinsi_code')->references('code')->on('provinsis')->onUpdate('cascade');
             $table->integer('kota_code');
             $table->foreign('kota_code')->references('code')->on('kotas')->onUpdate('cascade');
-            $table->integer('kecamatan_code');
-            $table->foreign('kecamatan_code')->references('code')->on('kecamatans')->onUpdate('cascade');
             $table->string('no_telp')->unique();
             $table->string('email')->unique();
 

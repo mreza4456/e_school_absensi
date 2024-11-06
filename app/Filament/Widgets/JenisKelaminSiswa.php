@@ -27,7 +27,7 @@ class JenisKelaminSiswa extends ChartWidget
         return [
             'all' => 'Semua',
             ...Kelas::where('sekolah_id', Auth::user()->sekolah_id)
-                ->pluck('nama', 'id')
+                ->pluck('nama_kelas', 'id')
                 ->toArray(),
         ];
     }

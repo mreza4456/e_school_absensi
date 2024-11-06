@@ -93,7 +93,7 @@ class AbsensiResource extends Resource
                                     ->where('sekolah_id', $get('sekolah_id'))
                                     ->get()
                                     ->mapWithKeys(fn ($siswa) => [
-                                        $siswa->uid => "{$siswa->nama} - {$siswa->kelas->nama}"
+                                        $siswa->uid => "{$siswa->nama} - {$siswa->kelas->nama_kelas}"
                                     ])
                             )
                             : collect()
@@ -200,7 +200,7 @@ class AbsensiResource extends Resource
                     ->searchable()
                     ->tooltip('Klik untuk melihat detail siswa'),
 
-                Tables\Columns\TextColumn::make('siswa.kelas.nama')
+                Tables\Columns\TextColumn::make('siswa.kelas.nama_kelas')
                     ->url(fn ($record) => route('filament.admin.resources.kelas.view', ['record' => $record->siswa->kelas->id]))
                     ->icon('heroicon-m-user-group')
                     ->color('primary')
@@ -271,7 +271,8 @@ class AbsensiResource extends Resource
                     ->label('Sekolah')
                     ->searchable()
                     ->preload()
-                    ->native(false),
+                    ->native(false)
+                    ->hidden(fn () => Auth::user()->sekolah_id != null),
 
                     Filter::make('waktu')
                     ->form([
@@ -308,7 +309,7 @@ class AbsensiResource extends Resource
                                 ->get()
                                 ->mapWithKeys(function ($kelas) {
                                     return [
-                                        $kelas->id => "{$kelas->nama} - {$kelas->sekolah->nama}" // Menampilkan nama kelas dan nama sekolah
+                                        $kelas->id => "{$kelas->nama_kelas} - {$kelas->sekolah->nama}" // Menampilkan nama kelas dan nama sekolah
                                     ];
                                 });
                         }
@@ -316,7 +317,7 @@ class AbsensiResource extends Resource
                         // Mengambil kelas berdasarkan sekolah_id jika ada
                         return Kelas::query()
                             ->where('sekolah_id', Auth::user()->sekolah_id)
-                            ->pluck('nama', 'id');
+                            ->pluck('nama_kelas', 'id');
                     })
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(

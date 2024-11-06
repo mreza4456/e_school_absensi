@@ -44,11 +44,13 @@ class WifiResource extends Resource
                         ->required()
                         ->relationship(name: 'mesin', titleAttribute: 'kode_mesin')
                         ->searchable()
+                        ->disabled(fn () => Auth::user()->sekolah_id !== null)
                         ->preload()
                         ->columnSpanFull(),
                     Forms\Components\TextInput::make('ssid')
                         ->maxLength(255),
                     Forms\Components\TextInput::make('password')
+                        ->revealable()
                         ->password()
                         ->maxLength(255),
                 ])->columns(2)

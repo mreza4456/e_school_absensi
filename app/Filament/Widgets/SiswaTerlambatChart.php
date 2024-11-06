@@ -25,36 +25,48 @@ class SiswaTerlambatChart extends ChartWidget
     {
         $sekolahId = Auth::user()->sekolah_id;
 
-        // Mapping English day names to Indonesian
         $dayMapping = [
-            'Monday' => 'Senin',
-            'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis',
-            'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
-            'Sunday' => 'Minggu',
+            'Senin' => 'Monday   ',
+            'Selasa' => 'Tuesday  ',
+            'Rabu' => 'Wednesday',
+            'Kamis' => 'Thursday ',
+            'Jumat' => 'Friday   ',
+            'Sabtu' => 'Saturday ',
+            'Minggu' => 'Sunday   ',
         ];
 
-        // Get active school days and corresponding entry times
         $activeDays = JadwalHarian::where('sekolah_id', $sekolahId)
             ->where('is_libur', false)
-            ->orderByRaw("FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu')")
+            ->orderByRaw("
+                CASE
+                    WHEN hari = 'Senin' THEN 1
+                    WHEN hari = 'Selasa' THEN 2
+                    WHEN hari = 'Rabu' THEN 3
+                    WHEN hari = 'Kamis' THEN 4
+                    WHEN hari = 'Jumat' THEN 5
+                    WHEN hari = 'Sabtu' THEN 6
+                    WHEN hari = 'Minggu' THEN 7
+                END
+            ")
             ->get(['hari', 'jam_masuk', 'jam_masuk_selesai']);
 
-        // Get the start and end of the current week
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        // Calculate lateness count per day
         $dailyLateCount = $activeDays->map(function($jadwal) use ($sekolahId, $startOfWeek, $endOfWeek, $dayMapping) {
-            // Convert Indonesian day name to English if necessary
-            $dbDayName = array_search($jadwal->hari, $dayMapping);
+            $englishDayName = $dayMapping[$jadwal->hari] ?? null;
+
+            if (!$englishDayName) {
+                return [
+                    'hari' => $jadwal->hari,
+                    'count' => 0,
+                ];
+            }
 
             $lateCount = Absensi::where('sekolah_id', $sekolahId)
                 ->where('keterangan', 'Terlambat')
-                ->whereBetween(DB::raw("DATE(tanggal)"), [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->whereRaw("DAYNAME(tanggal) = ?", [$dbDayName])
+                ->whereBetween(DB::raw("tanggal::date"), [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+                ->whereRaw("trim(to_char(tanggal, 'Day')) = ?", [trim($englishDayName)])
                 ->count();
 
             return [
@@ -63,24 +75,21 @@ class SiswaTerlambatChart extends ChartWidget
             ];
         });
 
-        // Debug output to ensure data is as expected
-        // Uncomment for debugging: dd($dailyLateCount->toArray());
-
         return [
             'datasets' => [
                 [
                     'label' => 'Jumlah Siswa Terlambat',
                     'data' => $dailyLateCount->pluck('count')->toArray(),
                     'fill' => true,
-                    'borderColor' => 'rgb(245, 158, 11)', // Amber-500
-                    'backgroundColor' => 'rgba(245, 158, 11, 0.1)', // Amber-500 with opacity
+                    'borderColor' => 'rgb(245, 158, 11)',
+                    'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
                     'tension' => 0.4,
                 ],
             ],
             'labels' => $dailyLateCount->pluck('hari')->toArray(),
         ];
     }
-
+    
     protected function getType(): string
     {
         return 'line';

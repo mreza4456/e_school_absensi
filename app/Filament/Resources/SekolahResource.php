@@ -106,16 +106,6 @@ class SekolahResource extends Resource
                                 $set('kecamatan_code', null);
                             })
                             ->columnSpanFull(),
-                        Forms\Components\Select::make('kecamatan_code')
-                            ->label('Kecamatan')
-                            ->required()
-                            ->options(fn (Get $get): Collection => Kecamatan::query()
-                                ->where('kota_code', $get('kota_code'))
-                                ->get()
-                                ->pluck('nama', 'code'))
-                            ->searchable()
-                            ->preload()
-                            ->columnSpanFull(),
                         Forms\Components\TextInput::make('no_telp')
                             ->tel()
                             ->required()
@@ -203,7 +193,7 @@ class SekolahResource extends Resource
                                             ])
                                             ->visible(fn (Get $get): bool => ! $get('is_libur')),
                                     ])
-                                    ->defaultItems(0) // Changed from 7 to 0
+                                    ->defaultItems(7) // Changed from 7 to 0
                                     ->addActionLabel('Tambah Jadwal Harian')
                                     ->columnSpanFull()
                                     ->itemLabel(fn (array $state): ?string => $state['hari'] ?? null)
@@ -271,16 +261,6 @@ class SekolahResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->tooltip('Klik untuk melihat detail Kota') // Tambahkan searchable karena ini kolom penting
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('kecamatan.nama')
-                    ->url(fn ($record) => route('filament.admin.resources.kecamatans.view', ['record' => $record->kecamatan->id]))
-                    ->icon('heroicon-m-building-library')
-                    ->color('primary')
-                    ->badge()
-                    ->sortable()
-                    ->searchable()
-                    ->tooltip('Klik untuk melihat detail Kecamatan') // Tambahkan searchable karena ini kolom penting
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('no_telp')

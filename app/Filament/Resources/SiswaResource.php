@@ -76,7 +76,7 @@ class SiswaResource extends Resource
                     Forms\Components\Select::make('kelas_id')
                         ->label('Kelas')
                         ->required()
-                        ->options(fn (Forms\Get $get): Collection => Kelas::query()->where('sekolah_id', $get('sekolah_id'))->get()->pluck('nama', 'id'))
+                        ->options(fn (Forms\Get $get): Collection => Kelas::query()->where('sekolah_id', $get('sekolah_id'))->get()->pluck('nama_kelas', 'id'))
                         ->searchable()
                         ->preload(),
                     Forms\Components\Select::make('jk')
@@ -130,10 +130,10 @@ class SiswaResource extends Resource
                 Tables\Columns\TextColumn::make('panggilan')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('kelas.nama')
+                Tables\Columns\TextColumn::make('kelas.nama_kelas')
                     ->url(function ($record) {
                         $kelas = Kelas::query()
-                            ->where('nama', $record->kelas)
+                            ->where('nama_kelas', $record->kelas)
                             ->where('sekolah_id', $record->sekolah_id)
                             ->first();
 
@@ -257,7 +257,8 @@ class SiswaResource extends Resource
                     ->label('Sekolah')
                     ->searchable()
                     ->preload()
-                    ->native(false),
+                    ->native(false)
+                    ->hidden(fn () => Auth::user()->sekolah_id != null),
 
                 // Demographic Filters
                 SelectFilter::make('jk')

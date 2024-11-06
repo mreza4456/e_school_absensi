@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
         // $this->call([
         //     ProvinceSeeder::class,
         //     RegencySeeder::class,
-        //     DistrictSeeder::class,
+        //     // DistrictSeeder::class,
         //     // SekolahSeeder::class,
         // ]);
-        // Sekolah::factory(10)->create();
-        Vendor::factory(10)->create();
+        // Sekolah::factory(10000)->create();
+        Vendor::factory(10000)->create();
         // User::factory(10)->create();
 
         // User::factory()->create([

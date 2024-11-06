@@ -39,7 +39,7 @@ class KelasResource extends Resource
                         ->preload()
                         ->hidden(fn () => Auth::user()->sekolah_id !== null)
                         ->dehydrated(),
-                    Forms\Components\TextInput::make('nama')
+                    Forms\Components\TextInput::make('nama_kelas')
                         ->required()
                         ->maxLength(255),
                 ])->columns(2),
@@ -55,16 +55,15 @@ class KelasResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('sekolah.nama')
-                    ->hidden(function ($record) {
-                        return $record && $record->sekolah_id || $record && $record->vendor_id ? true : false;
-                    })
+                    ->hidden(fn () => Auth::user()->sekolah_id != null)
                     ->url(fn ($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
                     ->icon('heroicon-m-building-library')
                     ->color('primary')
                     ->badge()
                     ->sortable()
                     ->tooltip('Klik untuk melihat detail sekolah'),
-                Tables\Columns\TextColumn::make('nama')
+                Tables\Columns\TextColumn::make('nama_kelas')
+                    ->label('Nama Kelas')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('siswa_count')
                     ->label('Jumlah Siswa')
@@ -77,14 +76,15 @@ class KelasResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])->defaultSort(fn () => Auth::user()->sekolah_id ? 'nama' : 'sekolah.nama')
+            ])->defaultSort(fn () => Auth::user()->sekolah_id ? 'nama_kelas' : 'sekolah.nama')
             ->filters([
                 SelectFilter::make('sekolah')
                     ->relationship('sekolah', 'nama')
                     ->label('Sekolah')
                     ->searchable()
                     ->preload()
-                    ->native(false),
+                    ->native(false)
+                    ->hidden(fn () => Auth::user()->sekolah_id != null),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

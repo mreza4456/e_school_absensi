@@ -35,7 +35,9 @@ class SiswaPalingSeringTerlambat extends BaseWidget
                     ->withCount(['absensi' => function (Builder $query) {
                         $query->where('keterangan', 'Terlambat');
                     }])
-                    ->having('absensi_count', '>', 0) // Add this line to filter out students with zero late counts
+                    ->whereHas('absensi', function (Builder $query) {
+                        $query->where('keterangan', 'Terlambat');
+                    })  // Mengganti having dengan whereHas
                     ->orderByDesc('absensi_count')
                     ->limit(10);
             })
@@ -57,7 +59,7 @@ class SiswaPalingSeringTerlambat extends BaseWidget
                     ->placeholder('Semua Kelas')
                     ->options(function () {
                         return Kelas::where('sekolah_id', Auth::user()->sekolah_id)
-                            ->pluck('nama', 'id')
+                            ->pluck('nama_kelas', 'id')
                             ->toArray();
                     })
                     ->searchable(),

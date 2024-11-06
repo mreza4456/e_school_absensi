@@ -45,60 +45,102 @@ class UserResource extends Resource
 
         return $form
             ->schema([
-                Forms\Components\FileUpload::make('avatar_url')
-                    ->image()
-                    ->avatar()
-                    ->directory('users-profiles')
-                    ->visibility('public')
-                    ->columnSpanFull()
-                    ->imageEditor()
-                    ->circleCropper()
-                    ->imageCropAspectRatio('1:1')
-                    ->imageResizeTargetWidth('400')
-                    ->imageResizeTargetHeight('400'),
-                Forms\Components\Select::make('sekolah_id')
-                    ->hidden(fn () => !$user->hasRole('super_admin') || Auth::user()->sekolah_id !== null || Auth::user()->vendor_id !== null)
-                    ->disabled(fn (Get $get) => filled($get('vendor_id')))
-                    ->nullable(fn () => $user->hasRole('super_admin'))
-                    ->required(fn () => !$user->hasRole('super_admin'))
-                    ->relationship(name: 'sekolah', titleAttribute: 'nama')
-                    ->searchable()
-                    ->live()
-                    ->preload(),
+                Forms\Components\Section::make('Profile Information')
+                    ->description('Update your account\'s profile information.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\FileUpload::make('avatar_url')
+                                    ->image()
+                                    ->avatar()
+                                    ->directory('users-profiles')
+                                    ->visibility('public')
+                                    ->columnSpanFull()
+                                    ->imageEditor()
+                                    ->circleCropper()
+                                    ->imageCropAspectRatio('1:1')
+                                    ->imageResizeTargetWidth('400')
+                                    ->imageResizeTargetHeight('400'),
+                            ]),
 
-                Forms\Components\Select::make('vendor_id')
-                    ->hidden(fn () => !$user->hasRole('super_admin') || Auth::user()->vendor_id !== null || Auth::user()->sekolah_id !== null)
-                    ->disabled(fn (Get $get) => filled($get('sekolah_id')))
-                    ->nullable(fn () => $user->hasRole('super_admin'))
-                    ->required(fn () => !$user->hasRole('super_admin'))
-                    ->relationship(name: 'vendor', titleAttribute: 'nama')
-                    ->searchable()
-                    ->live()
-                    ->preload(),
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('roles')
-                    ->relationship(
-                        name: 'roles',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn ($query) => $query->where('id', '!=', 2)
-                    )
-                    ->multiple()
-                    ->preload()
-                    ->searchable(),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                Forms\Components\TextInput::make('email')
+                                    ->email()
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->columns(2),
+                    ]),
+
+                Forms\Components\Section::make('Authentication')
+                    ->description('Manage user authentication settings.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('password')
+                                    ->password()
+                                    ->required()
+                                    ->revealable()
+                                    ->maxLength(255),
+
+                                Forms\Components\DateTimePicker::make('email_verified_at'),
+                            ])
+                            ->columns(2),
+                    ]),
+
+                Forms\Components\Section::make('Organization Details')
+                    ->description('Configure organization affiliations.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('sekolah_id')
+                                    ->hidden(fn () => !$user->hasRole('super_admin') || Auth::user()->sekolah_id !== null || Auth::user()->vendor_id !== null)
+                                    ->disabled(fn (Get $get) => filled($get('vendor_id')))
+                                    ->nullable(fn () => $user->hasRole('super_admin'))
+                                    ->required(fn () => !$user->hasRole('super_admin'))
+                                    ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                                    ->searchable()
+                                    ->live()
+                                    ->preload(),
+
+                                Forms\Components\Select::make('vendor_id')
+                                    ->hidden(fn () => !$user->hasRole('super_admin') || Auth::user()->vendor_id !== null || Auth::user()->sekolah_id !== null)
+                                    ->disabled(fn (Get $get) => filled($get('sekolah_id')))
+                                    ->nullable(fn () => $user->hasRole('super_admin'))
+                                    ->required(fn () => !$user->hasRole('super_admin'))
+                                    ->relationship(name: 'vendor', titleAttribute: 'nama')
+                                    ->searchable()
+                                    ->live()
+                                    ->preload(),
+                            ])
+                            ->columns(2),
+                    ]),
+
+                Forms\Components\Section::make('Roles')
+                    ->description('Manage user roles and account status.')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('roles')
+                                    ->relationship(
+                                        name: 'roles',
+                                        titleAttribute: 'name',
+                                        modifyQueryUsing: fn ($query) => $query->where('id', '!=', 2)
+                                    )
+                                    ->multiple()
+                                    ->preload()
+                                    ->searchable(),
+                            ])
+                            ->columns(2),
+                    ]),
                 Forms\Components\Toggle::make('status')
                     ->required(),
-            ]);
+                ]);
     }
 
     public static function table(Table $table): Table
@@ -169,176 +211,176 @@ class UserResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
-{
-    return $infolist
-        ->schema([
-            // Main Profile Section - Always Visible
-            Section::make()
-                ->schema([
-                    Grid::make(2)
-                        ->schema([
-                            Group::make([
-                                ImageEntry::make('image')
-                                    ->label('Foto Profil')
-                                    ->circular()
-                                    ->height(150)
-                                    ->width(150)
-                                    ->defaultImageUrl(asset('storage/users-profiles/default.png'))
-                                    ->extraAttributes([
-                                        'class' => 'ring-4 ring-primary-500 ring-offset-4 shadow-lg transition-all duration-300 hover:scale-105',
-                                    ]),
-                            ])
-                            ->columnSpan(1),
+//     public static function infolist(Infolist $infolist): Infolist
+// {
+//     return $infolist
+//         ->schema([
+//             // Main Profile Section - Always Visible
+//             Section::make()
+//                 ->schema([
+//                     Grid::make(2)
+//                         ->schema([
+//                             Group::make([
+//                                 ImageEntry::make('image')
+//                                     ->label('Foto Profil')
+//                                     ->circular()
+//                                     ->height(150)
+//                                     ->width(150)
+//                                     ->defaultImageUrl(asset('storage/users-profiles/default.png'))
+//                                     ->extraAttributes([
+//                                         'class' => 'ring-4 ring-primary-500 ring-offset-4 shadow-lg transition-all duration-300 hover:scale-105',
+//                                     ]),
+//                             ])
+//                             ->columnSpan(1),
 
-                            Group::make([
-                                TextEntry::make('name')
-                                    ->label('Nama Lengkap')
-                                    ->weight(FontWeight::Bold)
-                                    ->size(TextEntry\TextEntrySize::Large)
-                                    ->icon('heroicon-o-user')
-                                    ->iconPosition(IconPosition::Before)
-                                    ->extraAttributes(['class' => 'text-2xl mb-2']),
+//                             Group::make([
+//                                 TextEntry::make('name')
+//                                     ->label('Nama Lengkap')
+//                                     ->weight(FontWeight::Bold)
+//                                     ->size(TextEntry\TextEntrySize::Large)
+//                                     ->icon('heroicon-o-user')
+//                                     ->iconPosition(IconPosition::Before)
+//                                     ->extraAttributes(['class' => 'text-2xl mb-2']),
 
-                                TextEntry::make('email')
-                                    ->icon('heroicon-o-envelope')
-                                    ->copyable()
-                                    ->copyMessage('Email berhasil disalin!')
-                                    ->copyMessageDuration(1500)
-                                    ->extraAttributes(['class' => 'text-gray-600']),
+//                                 TextEntry::make('email')
+//                                     ->icon('heroicon-o-envelope')
+//                                     ->copyable()
+//                                     ->copyMessage('Email berhasil disalin!')
+//                                     ->copyMessageDuration(1500)
+//                                     ->extraAttributes(['class' => 'text-gray-600']),
 
-                                TextEntry::make('email_verified_at')
-                                    ->label('Email Terverifikasi')
-                                    ->dateTime('d M Y H:i')
-                                    ->hidden(fn ($record) => ! $record->email_verified_at)
-                                    ->icon('heroicon-o-shield-check')
-                                    ->color('success')
-                                    ->badge(),
-                            ])
-                            ->columnSpan(1)
-                            ->extraAttributes(['class' => 'space-y-3']),
-                        ]),
-                ])
-                ->collapsible(false)
-                ->extraAttributes(['class' => 'bg-white shadow-sm rounded-xl mb-6']),
+//                                 TextEntry::make('email_verified_at')
+//                                     ->label('Email Terverifikasi')
+//                                     ->dateTime('d M Y H:i')
+//                                     ->hidden(fn ($record) => ! $record->email_verified_at)
+//                                     ->icon('heroicon-o-shield-check')
+//                                     ->color('success')
+//                                     ->badge(),
+//                             ])
+//                             ->columnSpan(1)
+//                             ->extraAttributes(['class' => 'space-y-3']),
+//                         ]),
+//                 ])
+//                 ->collapsible(false)
+//                 ->extraAttributes(['class' => 'bg-white shadow-sm rounded-xl mb-6']),
 
-            // Tabbed Sections
-            Tabs::make('User Information')
-                ->tabs([
-                    Tabs\Tab::make('Informasi Profil')
-                        ->icon('heroicon-o-user-circle')
-                        ->schema([
-                            Grid::make(2)
-                                ->schema([
-                                    TextEntry::make('phone')
-                                        ->label('Nomor Telepon')
-                                        ->icon('heroicon-o-phone')
-                                        ->copyable(),
+//             // Tabbed Sections
+//             Tabs::make('User Information')
+//                 ->tabs([
+//                     Tabs\Tab::make('Informasi Profil')
+//                         ->icon('heroicon-o-user-circle')
+//                         ->schema([
+//                             Grid::make(2)
+//                                 ->schema([
+//                                     TextEntry::make('phone')
+//                                         ->label('Nomor Telepon')
+//                                         ->icon('heroicon-o-phone')
+//                                         ->copyable(),
 
-                                    TextEntry::make('address')
-                                        ->label('Alamat')
-                                        ->icon('heroicon-o-map-pin'),
+//                                     TextEntry::make('address')
+//                                         ->label('Alamat')
+//                                         ->icon('heroicon-o-map-pin'),
 
-                                    TextEntry::make('birth_date')
-                                        ->label('Tanggal Lahir')
-                                        ->date('d M Y')
-                                        ->icon('heroicon-o-cake'),
-                                ]),
-                        ]),
+//                                     TextEntry::make('birth_date')
+//                                         ->label('Tanggal Lahir')
+//                                         ->date('d M Y')
+//                                         ->icon('heroicon-o-cake'),
+//                                 ]),
+//                         ]),
 
-                    Tabs\Tab::make('Informasi Institusi')
-                        ->icon('heroicon-o-building-office')
-                        ->schema([
-                            Grid::make(2)
-                                ->schema([
-                                    TextEntry::make('sekolah.nama')
-                                        ->label('Sekolah')
-                                        ->visible(fn ($record) => $record->sekolah_id !== null)
-                                        ->icon('heroicon-o-academic-cap')
-                                        ->weight(FontWeight::Medium)
-                                        ->badge()
-                                        ->color('info'),
+//                     Tabs\Tab::make('Informasi Institusi')
+//                         ->icon('heroicon-o-building-office')
+//                         ->schema([
+//                             Grid::make(2)
+//                                 ->schema([
+//                                     TextEntry::make('sekolah.nama')
+//                                         ->label('Sekolah')
+//                                         ->visible(fn ($record) => $record->sekolah_id !== null)
+//                                         ->icon('heroicon-o-academic-cap')
+//                                         ->weight(FontWeight::Medium)
+//                                         ->badge()
+//                                         ->color('info'),
 
-                                    TextEntry::make('vendor.nama')
-                                        ->label('Vendor')
-                                        ->visible(fn ($record) => $record->vendor_id !== null)
-                                        ->icon('heroicon-o-building-storefront')
-                                        ->weight(FontWeight::Medium)
-                                        ->badge()
-                                        ->color('warning'),
+//                                     TextEntry::make('vendor.nama')
+//                                         ->label('Vendor')
+//                                         ->visible(fn ($record) => $record->vendor_id !== null)
+//                                         ->icon('heroicon-o-building-storefront')
+//                                         ->weight(FontWeight::Medium)
+//                                         ->badge()
+//                                         ->color('warning'),
 
-                                    TextEntry::make('department')
-                                        ->label('Departemen')
-                                        ->icon('heroicon-o-building-library')
-                                        ->badge()
-                                        ->color('info'),
+//                                     TextEntry::make('department')
+//                                         ->label('Departemen')
+//                                         ->icon('heroicon-o-building-library')
+//                                         ->badge()
+//                                         ->color('info'),
 
-                                    TextEntry::make('position')
-                                        ->label('Jabatan')
-                                        ->icon('heroicon-o-briefcase')
-                                        ->badge()
-                                        ->color('info'),
-                                ]),
-                        ]),
+//                                     TextEntry::make('position')
+//                                         ->label('Jabatan')
+//                                         ->icon('heroicon-o-briefcase')
+//                                         ->badge()
+//                                         ->color('info'),
+//                                 ]),
+//                         ]),
 
-                    Tabs\Tab::make('Detail Akun')
-                        ->icon('heroicon-o-cog')
-                        ->schema([
-                            Grid::make(2)
-                                ->schema([
-                                    TextEntry::make('role')
-                                        ->label('Peran')
-                                        ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                                        ->icon('heroicon-o-identification')
-                                        ->badge()
-                                        ->color(fn (string $state): string => match ($state) {
-                                            'superadmin' => 'danger',
-                                            'admin' => 'warning',
-                                            'user' => 'success',
-                                            default => 'gray',
-                                        }),
+//                     Tabs\Tab::make('Detail Akun')
+//                         ->icon('heroicon-o-cog')
+//                         ->schema([
+//                             Grid::make(2)
+//                                 ->schema([
+//                                     TextEntry::make('role')
+//                                         ->label('Peran')
+//                                         ->formatStateUsing(fn (string $state): string => ucfirst($state))
+//                                         ->icon('heroicon-o-identification')
+//                                         ->badge()
+//                                         ->color(fn (string $state): string => match ($state) {
+//                                             'superadmin' => 'danger',
+//                                             'admin' => 'warning',
+//                                             'user' => 'success',
+//                                             default => 'gray',
+//                                         }),
 
-                                    IconEntry::make('status')
-                                        ->label('Status Akun')
-                                        ->icon(fn (bool $state): string => match ($state) {
-                                            true => 'heroicon-o-check-circle',
-                                            false => 'heroicon-o-x-circle',
-                                        })
-                                        ->color(fn (bool $state): string => match ($state) {
-                                            true => 'success',
-                                            false => 'danger',
-                                        }),
+//                                     IconEntry::make('status')
+//                                         ->label('Status Akun')
+//                                         ->icon(fn (bool $state): string => match ($state) {
+//                                             true => 'heroicon-o-check-circle',
+//                                             false => 'heroicon-o-x-circle',
+//                                         })
+//                                         ->color(fn (bool $state): string => match ($state) {
+//                                             true => 'success',
+//                                             false => 'danger',
+//                                         }),
 
-                                    TextEntry::make('created_at')
-                                        ->label('Tanggal Dibuat')
-                                        ->dateTime('d M Y H:i')
-                                        ->icon('heroicon-o-calendar')
-                                        ->badge()
-                                        ->color('gray'),
+//                                     TextEntry::make('created_at')
+//                                         ->label('Tanggal Dibuat')
+//                                         ->dateTime('d M Y H:i')
+//                                         ->icon('heroicon-o-calendar')
+//                                         ->badge()
+//                                         ->color('gray'),
 
-                                    TextEntry::make('last_login_at')
-                                        ->label('Login Terakhir')
-                                        ->dateTime('d M Y H:i')
-                                        ->icon('heroicon-o-clock')
-                                        ->badge()
-                                        ->color('gray'),
-                                ]),
-                        ]),
+//                                     TextEntry::make('last_login_at')
+//                                         ->label('Login Terakhir')
+//                                         ->dateTime('d M Y H:i')
+//                                         ->icon('heroicon-o-clock')
+//                                         ->badge()
+//                                         ->color('gray'),
+//                                 ]),
+//                         ]),
 
-                    Tabs\Tab::make('Riwayat Aktivitas')
-                        ->icon('heroicon-o-clock')
-                        ->schema([
-                            TextEntry::make('activity_log')
-                                ->label('Aktivitas Terbaru')
-                                ->listWithLineBreaks()
-                                ->bulleted(),
-                        ]),
-                ])
-                ->activeTab(0) // Changed to use index instead of string
-                ->extraAttributes(['class' => 'bg-white shadow-sm rounded-xl']),
-        ])
-        ->columns(1);
-}
+//                     Tabs\Tab::make('Riwayat Aktivitas')
+//                         ->icon('heroicon-o-clock')
+//                         ->schema([
+//                             TextEntry::make('activity_log')
+//                                 ->label('Aktivitas Terbaru')
+//                                 ->listWithLineBreaks()
+//                                 ->bulleted(),
+//                         ]),
+//                 ])
+//                 ->activeTab(0) // Changed to use index instead of string
+//                 ->extraAttributes(['class' => 'bg-white shadow-sm rounded-xl']),
+//         ])
+//         ->columns(1);
+// }
 
     public static function getRelations(): array
     {

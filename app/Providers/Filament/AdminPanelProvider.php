@@ -44,6 +44,8 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->passwordReset()
+            ->emailVerification()
+            ->brandName('E-School')
             ->colors([
                 'primary' => Color::Amber,
             ])

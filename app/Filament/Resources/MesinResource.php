@@ -198,14 +198,16 @@ class MesinResource extends Resource
                     ->label('Vendor')
                     ->searchable()
                     ->preload()
-                    ->native(false),
+                    ->native(false)
+                    ->hidden(fn () => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
 
                 SelectFilter::make('sekolah')
                     ->relationship('sekolah', 'nama')
                     ->label('Sekolah')
                     ->searchable()
                     ->preload()
-                    ->native(false),
+                    ->native(false)
+                    ->hidden(fn () => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
 
                 // Date Range Filters
                 Filter::make('tgl_pembuatan')

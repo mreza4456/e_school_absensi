@@ -35,7 +35,7 @@ class SekolahKelasSiswa extends ChartWidget
                     'data' => $jumlahSiswaPerKelas->toArray(),
                 ],
             ],
-            'labels' => $kelas->pluck('nama')->toArray(),
+            'labels' => $kelas->pluck('nama_kelas')->toArray(),
         ];
     }
 
