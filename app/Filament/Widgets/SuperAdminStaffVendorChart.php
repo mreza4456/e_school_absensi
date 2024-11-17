@@ -2,34 +2,36 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Sekolah;
+use App\Models\Vendor;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\Auth;
 
-class SekolahChart extends ChartWidget
+class SuperAdminStaffVendorChart extends ChartWidget
 {
-    protected static ?string $heading = 'Sekolah';
+    use HasWidgetShield;
 
-    protected static ?int $sort = 2;
+    protected static ?string $heading = 'Vendor';
+
+    protected static ?int $sort = 3;
 
     public ?string $filter = null;
 
-    public static function canView(): bool
+    public function mount(): void
     {
-        $user = Auth::user();
-        assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['super_admin', 'staff']);
+        $this->filter = (string) Carbon::now()->year;
     }
 
     protected function getFilters(): ?array
     {
         $currentYear = Carbon::now()->year;
+
         return [
             $currentYear - 2 => ($currentYear - 2) . '',
             $currentYear - 1 => ($currentYear - 1) . '',
             $currentYear => $currentYear,
         ];
+
     }
 
     protected function getData(): array
@@ -39,9 +41,9 @@ class SekolahChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => "Sekolah Dibuat ($year)",
+                    'label' => "Vendor Dibuat ($year)",
                     'data' => collect(range(1, 12))->map(fn($month) =>
-                        Sekolah::whereMonth('created_at', $month)
+                        Vendor::whereMonth('created_at', $month)
                             ->whereYear('created_at', $year)
                             ->count()
                     )->toArray(),

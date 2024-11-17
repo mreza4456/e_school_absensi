@@ -4,21 +4,25 @@ namespace App\Filament\Widgets;
 
 use App\Models\Absensi;
 use App\Models\JadwalHarian;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class SiswaTerlambatChart extends ChartWidget
+class AdminStaffSekolahSiswaTerlambat extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Siswa Terlambat Minggu ini';
+
     protected static ?int $sort = 3;
 
     public static function canView(): bool
     {
         $user = Auth::user();
         assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['admin_sekolah', 'staff_sekolah']);
+        return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
     }
 
     protected function getData(): array
@@ -89,7 +93,7 @@ class SiswaTerlambatChart extends ChartWidget
             'labels' => $dailyLateCount->pluck('hari')->toArray(),
         ];
     }
-    
+
     protected function getType(): string
     {
         return 'line';

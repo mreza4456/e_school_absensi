@@ -29,7 +29,7 @@ class VendorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Manajemen Vendor';
+    protected static ?string $navigationGroup = 'Vendor';
 
     protected static ?int $navigationSort = 1;
 

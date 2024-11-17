@@ -4,11 +4,14 @@ namespace App\Filament\Widgets;
 
 use App\Models\Kelas;
 use App\Models\Siswa;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 
-class JenisKelaminSiswa extends ChartWidget
+class AdminStaffSekolahSiswaJkChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Jenis Kelamin Siswa';
 
     protected static ?int $sort = 4;
@@ -19,7 +22,7 @@ class JenisKelaminSiswa extends ChartWidget
     {
         $user = Auth::user();
         assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['admin_sekolah', 'staff_sekolah']);
+        return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
     }
 
     protected function getFilters(): ?array

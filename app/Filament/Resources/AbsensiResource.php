@@ -8,6 +8,7 @@ use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Sekolah;
 use App\Models\Siswa;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -28,7 +29,7 @@ class AbsensiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
-    protected static ?string $navigationGroup = 'Manajemen Sekolah';
+    protected static ?string $navigationGroup = 'Sekolah';
 
     protected static ?int $navigationSort = 4;
 
@@ -171,14 +172,15 @@ class AbsensiResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 // Timestamp Columns
                 Tables\Columns\TextColumn::make('tanggal')
-                    ->date()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->getStateUsing(fn ($record) => Carbon::parse($record->tanggal)->translatedFormat('d M Y')),
 
                 Tables\Columns\TextColumn::make('waktu')
-                    ->time()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->getStateUsing(fn ($record) => Carbon::parse($record->waktu)->format('H:i')),
+
 
                 // School and Student Info
                 Tables\Columns\TextColumn::make('sekolah.nama')
@@ -228,6 +230,7 @@ class AbsensiResource extends Resource
 
                 // Additional Info
                 Tables\Columns\TextColumn::make('uid')
+                    ->label('Kode Absensi')
                     ->sortable()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -248,9 +251,11 @@ class AbsensiResource extends Resource
                 Filter::make('date_range')
                     ->form([
                         Forms\Components\DatePicker::make('from_date')
-                            ->label('Dari Tanggal'),
+                            ->label('Dari Tanggal')
+                            ->default(now()),
                         Forms\Components\DatePicker::make('until_date')
-                            ->label('Sampai Tanggal'),
+                            ->label('Sampai Tanggal')
+                            ->default(now()),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -263,7 +268,7 @@ class AbsensiResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date)
                             );
                     })
-                    ->columns(2)->columnSpan(2),
+                    ->columns(2)->columnSpan(Auth::user()->sekolah_id ? 3 : 2),
 
                 // School & Class Filters
                 SelectFilter::make('sekolah')
@@ -358,8 +363,8 @@ class AbsensiResource extends Resource
                 Filter::make('uid')
                     ->form([
                         Forms\Components\TextInput::make('uid')
-                            ->label('UID')
-                            ->placeholder('Cari UID...')
+                            ->label('Kode Absensi')
+                            ->placeholder('Cari Kode Abensi...')
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(

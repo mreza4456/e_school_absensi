@@ -3,11 +3,14 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Mesin;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 
-class MesinSekolah extends ChartWidget
+class AdminStaffSekolahMesinChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Mesin Sekolah';
 
     protected static ?int $sort = 5;
@@ -16,7 +19,7 @@ class MesinSekolah extends ChartWidget
     {
         $user = Auth::user();
         assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['admin_sekolah', 'staff_sekolah']);
+        return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
     }
 
     protected function getData(): array

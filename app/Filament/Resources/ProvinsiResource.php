@@ -19,7 +19,7 @@ class ProvinsiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-asia-australia';
 
-    protected static ?string $navigationGroup = 'Manajemen Lokasi';
+    protected static ?string $navigationGroup = 'Lokasi';
 
     protected static ?int $navigationSort = 1;
 

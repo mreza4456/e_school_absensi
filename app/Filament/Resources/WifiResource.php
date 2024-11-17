@@ -20,7 +20,7 @@ class WifiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wifi';
 
-    protected static ?string $navigationGroup = 'Manajemen Vendor';
+    protected static ?string $navigationGroup = 'Vendor';
 
     protected static ?int $navigationSort = 3;
 
@@ -29,7 +29,7 @@ class WifiResource extends Resource
         $user = Auth::user();
 
         if ($user instanceof \App\Models\User) {
-            return $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah') ? 'Manajemen Mesin' : 'Manajemen Vendor';
+            return $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah') ? 'Mesin' : 'Vendor';
         }
     }
 

@@ -19,7 +19,7 @@ class KotaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Manajemen Lokasi';
+    protected static ?string $navigationGroup = 'Lokasi';
 
     protected static ?int $navigationSort = 2;
 

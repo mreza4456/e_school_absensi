@@ -5,13 +5,16 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KelasResource\Pages;
 use App\Filament\Resources\KelasResource\RelationManagers;
 use App\Models\Kelas;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +24,7 @@ class KelasResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Manajemen Sekolah';
+    protected static ?string $navigationGroup = 'Sekolah';
 
     protected static ?int $navigationSort = 2;
 
@@ -128,5 +131,34 @@ class KelasResource extends Resource
         }
 
         return $query;
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        $user = Auth::user();
+        assert($user instanceof User);
+        return $user->hasRole('super_admin') || $user->hasRole('staff') ? ['nama_kelas', 'sekolah.nama'] : ['nama_kelas'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->nama_kelas;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        $result = [];
+        if (Auth::user()->sekolah_id != null) {
+            $result = [
+                "Siswa: " => $record->siswa->count(),
+                "Laki-laki: " => $record->siswa->where('jk', 'L')->count(),
+                "Perempuan: " => $record->siswa->where('jk', 'P')->count(),
+            ];
+        } else {
+            $result = [
+                "Sekolah: " . $record->sekolah->nama
+            ];
+        }
+        return $result;
     }
 }

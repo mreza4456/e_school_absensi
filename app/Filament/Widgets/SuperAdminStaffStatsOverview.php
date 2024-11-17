@@ -6,21 +6,16 @@ use App\Models\Mesin;
 use App\Models\Sekolah;
 use App\Models\User;
 use App\Models\Vendor;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Enums\IconPosition;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\Auth;
 
-class GlobalStatsOverview extends BaseWidget
+class SuperAdminStaffStatsOverview extends BaseWidget
 {
-    protected static ?int $sort = 1;
+    use HasWidgetShield;
 
-    public static function canView(): bool
-    {
-        $user = Auth::user();
-        assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['super_admin', 'staff']);
-    }
+    protected static ?int $sort = 1;
 
     protected function getStats(): array
     {

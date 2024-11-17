@@ -2,19 +2,22 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Absen;
-use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
 
-class SiswaPalingSeringTerlambat extends BaseWidget
+class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
 {
+    use HasWidgetShield;
+
+    protected static ?string $heading = 'Siswa Paling Sering Terlambat';
+
     protected static ?int $sort = 7;
 
     protected int | string | array $columnSpan = 'full';

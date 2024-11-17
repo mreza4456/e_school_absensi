@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Mesin;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -11,23 +12,16 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Layout;
 
-class MesinMonitoringTable extends BaseWidget
+class SuperAdminStaffMesinTable extends BaseWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Mesin yang perlu Diset';
 
     protected static ?int $sort = 6;
 
     protected int | string | array $columnSpan = 'full';
-
-    public static function canView(): bool
-    {
-        $user = Auth::user();
-        assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['super_admin', 'staff']);
-    }
 
     public function table(Table $table): Table
     {

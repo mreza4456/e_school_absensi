@@ -15,14 +15,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([
-        //     ProvinceSeeder::class,
-        //     RegencySeeder::class,
-        //     // DistrictSeeder::class,
-        //     // SekolahSeeder::class,
-        // ]);
+        $this->call([
+            // ProvinceSeeder::class,
+            // RegencySeeder::class,
+            // DistrictSeeder::class,
+            // SekolahSeeder::class,
+            Siswa16::class
+        ]);
+
         // Sekolah::factory(10000)->create();
-        Vendor::factory(10000)->create();
+        // Vendor::factory(10000)->create();
         // User::factory(10)->create();
 
         // User::factory()->create([

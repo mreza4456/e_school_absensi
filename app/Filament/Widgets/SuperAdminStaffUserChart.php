@@ -3,21 +3,16 @@
 namespace App\Filament\Widgets;
 
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\Auth;
 
-class UserDistributionChart extends ChartWidget
+class SuperAdminStaffUserChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?string $heading = 'Pengguna';
 
     protected static ?int $sort = 4;
-
-    public static function canView(): bool
-    {
-        $user = Auth::user();
-        assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['super_admin', 'staff']);
-    }
 
     protected function getData(): array
     {

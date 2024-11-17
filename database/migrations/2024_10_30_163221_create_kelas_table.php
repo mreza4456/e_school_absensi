@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('kelas', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(Str::uuid());
             $table->foreignUuid('sekolah_id')->constrained()->cascadeOnDelete();
-            $table->string('nama');
+            $table->string('nama_kelas');
             $table->timestamps();
         });
     }

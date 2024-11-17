@@ -6,6 +6,7 @@ use App\Filament\Resources\SiswaResource\Pages;
 use App\Filament\Resources\SiswaResource\RelationManagers;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,7 +16,9 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -27,9 +30,11 @@ class SiswaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?string $navigationGroup = 'Manajemen Sekolah';
+    protected static ?string $navigationGroup = 'Sekolah';
 
     protected static ?int $navigationSort = 3;
+
+    protected static int $globalSearchResultsLimit = 20;
 
     public static function form(Form $form): Form
     {
@@ -116,10 +121,12 @@ class SiswaResource extends Resource
                     ->tooltip('Klik untuk melihat detail sekolah'), // Tambahkan searchable karena ini kolom penting
 
                 Tables\Columns\TextColumn::make('uid')
+                    ->label('Kode Absensi')
                     ->searchable()
                     ->sortable(), // Tambahkan sortable karena unique identifier
 
                 Tables\Columns\TextColumn::make('nis')
+                    ->label('NIS')
                     ->searchable() // Tambahkan searchable karena nomor identitas
                     ->sortable(),
 
@@ -348,5 +355,34 @@ class SiswaResource extends Resource
         }
 
         return $query;
+    }
+
+    // Global Search
+    public static function getGloballySearchableAttributes(): array
+    {
+        $user = Auth::user();
+        assert($user instanceof User);
+        return $user->hasRole('super_admin') || $user->hasRole('staff') ? ['nama', 'sekolah.nama', 'kelas.nama_kelas', 'nis', 'uid'] : ['nama', 'kelas.nama_kelas', 'nis', 'uid'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->nama;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        $result = [];
+        if (Auth::user()->sekolah_id != null) {
+            $result = [
+                "Kelas: " => $record->kelas->nama_kelas,
+                "Jenis Kelamin: " => $record->jk == 'L' ? 'Laki-laki' : 'Perempuan',
+            ];
+        } else {
+            $result = [
+                "Sekolah: " => $record->sekolah->nama
+            ];
+        }
+        return $result;
     }
 }

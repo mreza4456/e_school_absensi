@@ -18,6 +18,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -31,7 +32,7 @@ class SekolahResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
 
-    protected static ?string $navigationGroup = 'Manajemen Sekolah';
+    protected static ?string $navigationGroup = 'Sekolah';
 
     protected static ?int $navigationSort = 1;
 
@@ -455,5 +456,25 @@ class SekolahResource extends Resource
         $user = Auth::user();
         assert($user instanceof User);
         return $user->hasRole('super_admin') || $user->hasRole('staff') ? true : false;
+    }
+
+    // Global Search
+    public static function getGloballySearchableAttributes(): array
+    {
+        $user = Auth::user();
+        assert($user instanceof User);
+        return $user->hasRole('super_admin') || $user->hasRole('staff') ? ['nama', 'npsn', 'provinsi.nama', 'kota.nama'] : [];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
+    {
+        return $record->nama;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            $record->provinsi->nama . ', ' . $record->kota->nama,
+        ];
     }
 }
