@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\AbsensiDashboard;
+use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\UserResource\Widgets\YourModelWidget;
 use App\Filament\Widgets\AbsensiTrendChart;
 use App\Filament\Widgets\GlobalAbsensiOverview;
@@ -18,6 +20,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -44,9 +47,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile(isSimple: false)
+            ->registration()
             ->passwordReset()
             ->emailVerification()
-            ->brandName('E-School')
+            ->brandName('eSchool')
             ->sidebarCollapsibleOnDesktop(true)
             ->colors([
                 'primary' => Color::Amber,
@@ -60,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                AbsensiDashboard::class,
             ])
             ->navigationGroups([
                 'Sekolah',
@@ -80,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn () => Auth::user()->sekolah_id !== null || Auth::user()->vendor_id !== null),
 
             ])
+            ->breadcrumbs(false)
             ->spa()
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

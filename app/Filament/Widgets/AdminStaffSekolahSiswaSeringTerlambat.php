@@ -7,10 +7,12 @@ use App\Models\Siswa;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\DatePicker;
 
 class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
 {
@@ -24,9 +26,12 @@ class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
 
     public static function canView(): bool
     {
+        if (request()->is('admin')) {
+            return false;
+        }
         $user = Auth::user();
         assert($user instanceof \App\Models\User);
-        return $user->hasAnyRole(['admin_sekolah', 'staff_sekolah']);
+        return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
     }
 
     public function table(Table $table): Table
@@ -40,7 +45,7 @@ class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
                     }])
                     ->whereHas('absensi', function (Builder $query) {
                         $query->where('keterangan', 'Terlambat');
-                    })  // Mengganti having dengan whereHas
+                    })
                     ->orderByDesc('absensi_count')
                     ->limit(10);
             })
@@ -53,6 +58,23 @@ class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
                     ->sortable()
                     ->searchable()
                     ->tooltip('Klik untuk melihat detail siswa'),
+                Tables\Columns\TextColumn::make('kelas.nama_kelas')
+                    ->url(function ($record) {
+                        $kelas = Kelas::query()
+                            ->where('nama_kelas', $record->kelas)
+                            ->where('sekolah_id', $record->sekolah_id)
+                            ->first();
+
+                        return $kelas
+                            ? route('filament.admin.resources.kelas.view', ['record' => $kelas->id])
+                            : null;
+                    })
+                    ->icon('heroicon-m-user-group')
+                    ->color('primary')
+                    ->badge()
+                    ->searchable()
+                    ->sortable()
+                    ->tooltip('Klik untuk melihat detail kelas'),
                 Tables\Columns\TextColumn::make('panggilan')->label('Panggilan'),
                 Tables\Columns\TextColumn::make('absensi_count')->label('Total Terlambat'),
             ])
@@ -66,6 +88,30 @@ class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
                             ->toArray();
                     })
                     ->searchable(),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn (Builder $query, $date): Builder => $query->whereHas(
+                                    'absensi',
+                                    fn (Builder $query) => $query->whereDate('tanggal', '>=', $date)
+                                )
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn (Builder $query, $date): Builder => $query->whereHas(
+                                    'absensi',
+                                    fn (Builder $query) => $query->whereDate('tanggal', '<=', $date)
+                                )
+                            );
+                    })
             ]);
     }
 }

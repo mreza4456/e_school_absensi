@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Mesin;
 use App\Models\Sekolah;
 use App\Models\User;
 use App\Models\Vendor;
@@ -16,20 +17,20 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // ProvinceSeeder::class,
-            // RegencySeeder::class,
-            // DistrictSeeder::class,
-            // SekolahSeeder::class,
-            Siswa16::class
+            ProvinceSeeder::class,
+            RegencySeeder::class,
+            SekolahSeeder::class,
+            VendorSeeder::class,
+            UserSeeder::class,
+            RoleSeeder::class,
+            ModelHasRoleSeeder::class,
+            PermissionSeeder::class,
+            RoleHasPermissionSeeder::class,
+            MesinSeeder::class,
+            WifiSeeder::class,
+            JadwalHarianSeeder::class,
+            KelasSeeder::class,
+            SiswaSeeder::class
         ]);
-
-        // Sekolah::factory(10000)->create();
-        // Vendor::factory(10000)->create();
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
     }
 }

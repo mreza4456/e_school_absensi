@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class KelasSeeder extends Seeder
 {
@@ -15,88 +14,30 @@ class KelasSeeder extends Seeder
      */
     public function run()
     {
-        // Get all sekolah IDs
-        $sekolahIds = DB::table('sekolahs')->select('id', 'jenjang', 'nama')->get();
+        $kelasData = [
+            [
+                'id' => '9d74a53b-70a6-4661-b1e5-a1331395d106',
+                'sekolah_id' => '9d749f41-3bf2-48da-9dc0-438d930e5c79',
+                'nama_kelas' => 'XII RPL 2',
+                'created_at' => '2024-11-10T05:52:19.000Z',
+                'updated_at' => '2024-11-10T05:52:19.000Z'
+            ],
+            [
+                'id' => '9d82f22b-ea67-4981-ae24-a82a9cec8242',
+                'sekolah_id' => '9d749f41-3bf2-48da-9dc0-438d930e5c79',
+                'nama_kelas' => 'XII RPL 1',
+                'created_at' => '2024-11-17T08:29:02.000Z',
+                'updated_at' => '2024-11-17T08:29:02.000Z'
+            ],
+            [
+                'id' => '9d82f289-ce6b-44e5-a9e1-4d42f1f17dce',
+                'sekolah_id' => '9d749f41-3bf2-48da-9dc0-438d930e5c79',
+                'nama_kelas' => 'XII RPL 3',
+                'created_at' => '2024-11-17T08:30:04.000Z',
+                'updated_at' => '2024-11-17T08:30:04.000Z'
+            ]
+        ];
 
-        foreach ($sekolahIds as $sekolah) {
-            // Different class patterns based on school level
-            switch ($sekolah->jenjang) {
-                case 'SD':
-                    $tingkatan = range(1, 6); // SD has 6 grades
-                    $parallels = range('A', 'C'); // 3 parallel classes
-                    foreach ($tingkatan as $tingkat) {
-                        foreach ($parallels as $parallel) {
-                            DB::table('kelas')->insert([
-                                'id' => Str::uuid(),
-                                'sekolah_id' => $sekolah->id,
-                                'nama' => $tingkat . ' ' . $parallel,
-                                'created_at' => Carbon::now(),
-                                'updated_at' => Carbon::now(),
-                            ]);
-                        }
-                    }
-                    break;
-
-                case 'SMP':
-                    $tingkatan = range(7, 9); // SMP has 3 grades (7-9)
-                    $parallels = range('A', 'D'); // 4 parallel classes
-                    foreach ($tingkatan as $tingkat) {
-                        foreach ($parallels as $parallel) {
-                            DB::table('kelas')->insert([
-                                'id' => Str::uuid(),
-                                'sekolah_id' => $sekolah->id,
-                                'nama' => $tingkat . ' ' . $parallel,
-                                'created_at' => Carbon::now(),
-                                'updated_at' => Carbon::now(),
-                            ]);
-                        }
-                    }
-                    break;
-
-                case 'SMA':
-                    $tingkatan = range(10, 12); // SMA has 3 grades (10-12)
-                    $programs = [
-                        'IPA' => range('A', 'C'), // 3 parallel classes for Science
-                        'IPS' => range('A', 'B')  // 2 parallel classes for Social
-                    ];
-                    foreach ($tingkatan as $tingkat) {
-                        foreach ($programs as $program => $parallels) {
-                            foreach ($parallels as $parallel) {
-                                DB::table('kelas')->insert([
-                                    'id' => Str::uuid(),
-                                    'sekolah_id' => $sekolah->id,
-                                    'nama' => $tingkat . ' ' . $program . ' ' . $parallel,
-                                    'created_at' => Carbon::now(),
-                                    'updated_at' => Carbon::now(),
-                                ]);
-                            }
-                        }
-                    }
-                    break;
-
-                case 'SMK':
-                    $tingkatan = range(10, 12); // SMK has 3 grades (10-12)
-                    // Common SMK programs
-                    $programs = [
-                        'TKJ' => range('A', 'B'),  // Teknik Komputer dan Jaringan
-                        'AKL' => range('A', 'B'),  // Akuntansi dan Keuangan Lembaga
-                        'OTKP' => range('A', 'B'), // Otomatisasi dan Tata Kelola Perkantoran
-                    ];
-                    foreach ($tingkatan as $tingkat) {
-                        foreach ($programs as $program => $parallels) {
-                            foreach ($parallels as $parallel) {
-                                DB::table('kelas')->insert([
-                                    'id' => Str::uuid(),
-                                    'sekolah_id' => $sekolah->id,
-                                    'nama' => $tingkat . ' ' . $program . ' ' . $parallel,
-                                    'created_at' => Carbon::now(),
-                                    'updated_at' => Carbon::now(),
-                                ]);
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
+        DB::table('kelas')->insert($kelasData);
     }
 }

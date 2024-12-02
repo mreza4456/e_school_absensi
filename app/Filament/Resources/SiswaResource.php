@@ -246,17 +246,16 @@ class SiswaResource extends Resource
                     }),
 
                 // Kelas & Sekolah Filters
-                Filter::make('kelas')
-                    ->form([
-                        Forms\Components\TextInput::make('kelas')
-                            ->label('Kelas')
-                            ->placeholder('Cari kelas...')
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['kelas'],
-                            fn (Builder $query, $value): Builder => $query->where('kelas', 'like', "%{$value}%")
-                        );
+                SelectFilter::make('kelas')
+                    ->relationship('kelas', 'nama_kelas')
+                    ->label('Kelas')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->options(function ($request) {
+                        $user = $request->user();
+                        return Kelas::where('sekolah_id', $user->sekolah_id)
+                            ->pluck('nama_kelas', 'id');
                     }),
 
                 SelectFilter::make('sekolah')

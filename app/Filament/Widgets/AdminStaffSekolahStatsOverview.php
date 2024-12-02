@@ -8,13 +8,14 @@ use App\Models\Siswa;
 use App\Models\User;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Enums\IconPosition;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
 
 class AdminStaffSekolahStatsOverview extends BaseWidget
 {
-    use HasWidgetShield;
+    use HasWidgetShield, InteractsWithPageFilters;
 
     protected static ?int $sort = 1;
 

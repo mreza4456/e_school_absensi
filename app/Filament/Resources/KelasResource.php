@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\KelasResource\Pages;
 use App\Filament\Resources\KelasResource\RelationManagers;
+use App\Filament\Resources\KelasResource\RelationManagers\SiswaRelationManager;
 use App\Models\Kelas;
 use App\Models\User;
 use Filament\Forms;
@@ -43,6 +44,7 @@ class KelasResource extends Resource
                         ->hidden(fn () => Auth::user()->sekolah_id !== null)
                         ->dehydrated(),
                     Forms\Components\TextInput::make('nama_kelas')
+                        ->label('Nama Kelas')
                         ->required()
                         ->maxLength(255),
                 ])->columns(2),
@@ -103,7 +105,7 @@ class KelasResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            SiswaRelationManager::class
         ];
     }
 

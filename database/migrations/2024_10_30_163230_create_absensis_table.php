@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignUuid('sekolah_id')->constrained()->cascadeOnDelete();
             $table->date('tanggal');
             $table->time('waktu');
-            $table->enum('keterangan', ['Masuk', 'Terlambat', 'Pulang', 'Belum Absen'])->default('Belum Absen');
+            $table->enum('keterangan', ['Masuk', 'Pulang', 'Terlambat', 'Izin', 'Sakit', 'Alpa'])->default('Alpa');
             $table->timestamps();
         });
     }

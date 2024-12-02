@@ -21,10 +21,8 @@ class EditUser extends EditRecord
         // Pastikan array roles ada
         $roles = $data['roles'] ?? [];
 
-        // Tambahkan role ID 2 ke array jika belum ada
-        if (!in_array(2, $roles)) {
-            $roles[] = 2;
-        }
+        // Tambahkan role ID 2 ke array
+        $roles[] = 2;
 
         // Update data dengan roles yang baru
         $data['roles'] = $roles;
@@ -46,6 +44,15 @@ class EditUser extends EditRecord
     {
         $user = Auth::user();
         assert($user instanceof User);
+
+        // Pastikan array roles ada
+        $roles = $data['roles'] ?? [];
+
+        // Tambahkan role ID 2 ke array
+        $roles[] = 2;
+
+        // Update data dengan roles yang baru
+        $data['roles'] = $roles;
 
         // Handle image upload
         if (isset($data['image']) && $data['image'] !== $this->record->image) {

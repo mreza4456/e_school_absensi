@@ -7,19 +7,24 @@ use App\Models\JadwalHarian;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminStaffSekolahSiswaTerlambat extends ChartWidget
 {
     use HasWidgetShield;
+    use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Siswa Terlambat Minggu ini';
+    protected static ?string $heading = 'Siswa Terlambat';
 
     protected static ?int $sort = 3;
 
     public static function canView(): bool
     {
+        if (request()->is('admin')) {
+            return false;
+        }
         $user = Auth::user();
         assert($user instanceof \App\Models\User);
         return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
@@ -54,10 +59,11 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
             ")
             ->get(['hari', 'jam_masuk', 'jam_masuk_selesai']);
 
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+        // Get the date range from filters, default to current week if not set
+        $startDate = $this->filters['startDate'] ?? null;
+        $endDate = $this->filters['endDate'] ?? null;
 
-        $dailyLateCount = $activeDays->map(function($jadwal) use ($sekolahId, $startOfWeek, $endOfWeek, $dayMapping) {
+        $dailyLateCount = $activeDays->map(function($jadwal) use ($sekolahId, $startDate, $endDate, $dayMapping) {
             $englishDayName = $dayMapping[$jadwal->hari] ?? null;
 
             if (!$englishDayName) {
@@ -69,7 +75,7 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
 
             $lateCount = Absensi::where('sekolah_id', $sekolahId)
                 ->where('keterangan', 'Terlambat')
-                ->whereBetween(DB::raw("tanggal::date"), [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+                ->whereBetween(DB::raw("tanggal::date"), [$startDate, $endDate])
                 ->whereRaw("trim(to_char(tanggal, 'Day')) = ?", [trim($englishDayName)])
                 ->count();
 
@@ -96,7 +102,7 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 
     protected function getOptions(): array
@@ -122,4 +128,13 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
             ],
         ];
     }
+
+    // public function getDescription(): ?string
+    // {
+    //     $startDate = $this->filters['startDate'] ?? Carbon::now()->startOfWeek();
+    //     $endDate = $this->filters['endDate'] ?? Carbon::now()->endOfWeek();
+
+    //     return "Data dari " . Carbon::parse($startDate)->format('d M Y') .
+    //            " sampai " . Carbon::parse($endDate)->format('d M Y');
+    // }
 }
