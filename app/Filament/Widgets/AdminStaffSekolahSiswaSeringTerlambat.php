@@ -46,8 +46,7 @@ class AdminStaffSekolahSiswaSeringTerlambat extends BaseWidget
                     ->whereHas('absensi', function (Builder $query) {
                         $query->where('keterangan', 'Terlambat');
                     })
-                    ->orderByDesc('absensi_count')
-                    ->limit(10);
+                    ->orderByDesc('absensi_count');
             })
             ->columns([
                 Tables\Columns\TextColumn::make('nama')->label('Nama Siswa')

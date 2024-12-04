@@ -39,7 +39,7 @@ class AbsensiDashboard extends Page
                         'bulan_ini' => 'Bulan Ini',
                         'bulan_lalu' => 'Bulan Lalu',
                     ])
-                    ->default('7_hari_terakhir')
+                    ->default('hari_ini')
                     ->native(false)
                     ->live(),
                 Select::make('kelas')
@@ -62,15 +62,4 @@ class AbsensiDashboard extends Page
         assert($user instanceof \App\Models\User);
         return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
     }
-
-    // protected function getHeaderWidgets(): array
-    // {
-    //     return [
-    //         AdminStaffSekolahAbsensiOverview::make(),
-    //         AdminStaffSekolahAbsensiChart::class,
-    //         AdminStaffSekolahSiswaTerlambat::class,
-    //         AdminStaffSekolahAnalisisAbsensi::class,
-    //         AdminStaffSekolahSiswaSeringTerlambat::class
-    //     ];
-    // }
 }

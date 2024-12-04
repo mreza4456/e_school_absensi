@@ -34,16 +34,18 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
     {
         $sekolahId = Auth::user()->sekolah_id;
 
+        // Day Mapping
         $dayMapping = [
-            'Senin' => 'Monday   ',
-            'Selasa' => 'Tuesday  ',
+            'Senin' => 'Monday',
+            'Selasa' => 'Tuesday',
             'Rabu' => 'Wednesday',
-            'Kamis' => 'Thursday ',
-            'Jumat' => 'Friday   ',
-            'Sabtu' => 'Saturday ',
-            'Minggu' => 'Sunday   ',
+            'Kamis' => 'Thursday',
+            'Jumat' => 'Friday',
+            'Sabtu' => 'Saturday',
+            'Minggu' => 'Sunday',
         ];
 
+        // Ambil Hari Aktif
         $activeDays = JadwalHarian::where('sekolah_id', $sekolahId)
             ->where('is_libur', false)
             ->orderByRaw("
@@ -59,11 +61,10 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
             ")
             ->get(['hari', 'jam_masuk', 'jam_masuk_selesai']);
 
-        // Get the date range from filters, default to current week if not set
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? null;
+        // Ambil Rentang Tanggal dari Filter atau Default ke Minggu Ini
+        [$startDate, $endDate] = $this->getDateRange();
 
-        $dailyLateCount = $activeDays->map(function($jadwal) use ($sekolahId, $startDate, $endDate, $dayMapping) {
+        $dailyLateCount = $activeDays->map(function ($jadwal) use ($sekolahId, $startDate, $endDate, $dayMapping) {
             $englishDayName = $dayMapping[$jadwal->hari] ?? null;
 
             if (!$englishDayName) {
@@ -75,7 +76,7 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
 
             $lateCount = Absensi::where('sekolah_id', $sekolahId)
                 ->where('keterangan', 'Terlambat')
-                ->whereBetween(DB::raw("tanggal::date"), [$startDate, $endDate])
+                ->whereBetween(DB::raw("tanggal::date"), [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->whereRaw("trim(to_char(tanggal, 'Day')) = ?", [trim($englishDayName)])
                 ->count();
 
@@ -98,6 +99,44 @@ class AdminStaffSekolahSiswaTerlambat extends ChartWidget
             ],
             'labels' => $dailyLateCount->pluck('hari')->toArray(),
         ];
+    }
+
+    protected function getDateRange(): array
+    {
+        $dateRange = $this->filters['dateRange'] ?? 'minggu_ini';
+
+        $now = Carbon::now();
+
+        return match ($dateRange) {
+            'hari_ini' => [
+                $now->startOfDay(),
+                $now->copy()->endOfDay(),
+            ],
+            'kemarin' => [
+                $now->copy()->subDay()->startOfDay(),
+                $now->copy()->subDay()->endOfDay(),
+            ],
+            '7_hari_terakhir' => [
+                $now->copy()->subDays(6)->startOfDay(),
+                $now->endOfDay(),
+            ],
+            '30_hari_terakhir' => [
+                $now->copy()->subDays(29)->startOfDay(),
+                $now->endOfDay(),
+            ],
+            'bulan_ini' => [
+                $now->copy()->startOfMonth(),
+                $now->copy()->endOfMonth(),
+            ],
+            'bulan_lalu' => [
+                $now->copy()->subMonth()->startOfMonth(),
+                $now->copy()->subMonth()->endOfMonth(),
+            ],
+            default => [
+                $now->copy()->startOfWeek(),
+                $now->copy()->endOfWeek(),
+            ],
+        };
     }
 
     protected function getType(): string
