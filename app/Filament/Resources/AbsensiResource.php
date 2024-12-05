@@ -83,233 +83,233 @@ class AbsensiResource extends Resource
                     }
                 }),
 
-            Forms\Components\Select::make('kelas_filter')
-                ->label('Kelas')
-                ->options(fn (Get $get): Collection =>
-                    $get('sekolah_id')
-                        ? Kelas::where('sekolah_id', $get('sekolah_id'))->pluck('nama_kelas', 'id')
-                        : collect()
-                )
-                ->searchable()
-                ->live()
-                ->afterStateUpdated(function (callable $set) {
-                    $set('uid', null);
-                }),
+                Forms\Components\Select::make('kelas_filter')
+                    ->label('Kelas')
+                    ->options(fn (Get $get): Collection =>
+                        $get('sekolah_id')
+                            ? Kelas::where('sekolah_id', $get('sekolah_id'))->pluck('nama_kelas', 'id')
+                            : collect()
+                    )
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function (callable $set) {
+                        $set('uid', null);
+                    }),
 
-            Forms\Components\Select::make('uid')
-                ->required()
-                ->label('Siswa')
-                ->options(fn (Get $get): Collection =>
-                    $get('sekolah_id')
-                        ? cache()->remember(
-                            "siswa_options_{$get('sekolah_id')}_" .
-                            ($get('kelas_filter') ? "kelas_{$get('kelas_filter')}" : 'all'),
-                            now()->addMinutes(5),
-                            fn() => Siswa::query()
-                                ->where('sekolah_id', $get('sekolah_id'))
-                                ->when($get('kelas_filter'), fn($query) => $query->where('kelas_id', $get('kelas_filter')))
-                                ->get()
-                                ->mapWithKeys(fn ($siswa) => [
-                                    $siswa->uid => "{$siswa->nama} - {$siswa->kelas->nama_kelas}"
-                                ])
-                        )
-                        : collect()
-                )
-                ->searchable()
-                ->preload()
-                ->disabled(fn (Get $get): bool => !$get('sekolah_id')),
+                    Forms\Components\Select::make('siswa_id')
+                    ->required()
+                    ->label('Siswa')
+                    ->options(fn (Get $get): Collection =>
+                        $get('sekolah_id')
+                            ? cache()->remember(
+                                "siswa_options_{$get('sekolah_id')}_" .
+                                ($get('kelas_filter') ? "kelas_{$get('kelas_filter')}" : 'all'),
+                                now()->addMinutes(5),
+                                fn() => Siswa::query()
+                                    ->where('sekolah_id', $get('sekolah_id'))
+                                    ->when($get('kelas_filter'), fn($query) => $query->where('kelas_id', $get('kelas_filter')))
+                                    ->get()
+                                    ->mapWithKeys(fn ($siswa) => [
+                                        $siswa->id => "{$siswa->nama} - {$siswa->kelas->nama_kelas}" // ID sebagai key
+                                    ])
+                            )
+                            : collect()
+                    )
+                    ->searchable()
+                    ->preload()
+                    ->disabled(fn (Get $get): bool => !$get('sekolah_id')),
 
-                    Forms\Components\DatePicker::make('tanggal')
-                        ->required()
-                        ->default(function () {
-                            if (Auth::user()->sekolah_id) {
-                                $timezone = cache()->remember(
-                                    "sekolah_timezone_" . Auth::user()->sekolah_id,
-                                    now()->addMinutes(30),
-                                    fn() => Auth::user()->sekolah->timezone
-                                );
+                        Forms\Components\DatePicker::make('tanggal')
+                            ->required()
+                            ->default(function () {
+                                if (Auth::user()->sekolah_id) {
+                                    $timezone = cache()->remember(
+                                        "sekolah_timezone_" . Auth::user()->sekolah_id,
+                                        now()->addMinutes(30),
+                                        fn() => Auth::user()->sekolah->timezone
+                                    );
 
-                                if ($timezone) {
-                                    $timezone = match ($timezone) {
-                                        'WIB' => 'Asia/Jakarta',
-                                        'WITA' => 'Asia/Makassar',
-                                        'WIT' => 'Asia/Jayapura',
-                                        default => 'Asia/Jakarta'
-                                    };
+                                    if ($timezone) {
+                                        $timezone = match ($timezone) {
+                                            'WIB' => 'Asia/Jakarta',
+                                            'WITA' => 'Asia/Makassar',
+                                            'WIT' => 'Asia/Jayapura',
+                                            default => 'Asia/Jakarta'
+                                        };
 
-                                    return now()->timezone($timezone)->format('Y-m-d');
-                                }
-
-                                return now()->format('Y-m-d');
-                            }
-
-                            return null;
-                        })
-                        ->live()
-                        ->afterStateUpdated(function (Get $get, callable $set, $state) {
-                            try {
-                                $sekolahId = $get('sekolah_id');
-                                $waktu = $get('waktu');
-
-                                if ($sekolahId && $state && $waktu) {
-                                    $sekolah = Sekolah::findOrFail($sekolahId);
-                                    $schoolTimezone = match ($sekolah->timezone) {
-                                        'WIB' => 'Asia/Jakarta',
-                                        'WITA' => 'Asia/Makassar',
-                                        'WIT' => 'Asia/Jayapura',
-                                        default => 'Asia/Jakarta'
-                                    };
-
-                                    $inputDateTime = Carbon::parse($state . ' ' . $waktu, $schoolTimezone);
-                                    $dayOfWeek = $inputDateTime->locale('id')->dayName;
-
-                                    $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
-
-                                    if ($jadwal) {
-                                        $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
-                                        $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
-                                        $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
-                                        $jamPulangSelesai = $jamPulang->copy()->addHour();
-
-                                        if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
-                                            $set('keterangan', 'Masuk');
-                                        } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
-                                            $set('keterangan', 'Terlambat');
-                                        } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
-                                            $set('keterangan', 'Pulang');
-                                        } else {
-                                            $set('keterangan', null);
-                                        }
+                                        return now()->timezone($timezone)->format('Y-m-d');
                                     }
-                                }
-                            } catch (\Exception $e) {
-                                $set('keterangan', null);
-                            }
-                        })
-                        ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')),
 
-                    Forms\Components\TimePicker::make('waktu')
-                        ->required()
-                        ->default(function () {
-                            if (Auth::user()->sekolah_id) {
-                                $timezone = cache()->remember(
-                                    "sekolah_timezone_" . Auth::user()->sekolah_id,
-                                    now()->addMinutes(30),
-                                    fn() => Auth::user()->sekolah->timezone
-                                );
-
-                                if ($timezone) {
-                                    $timezone = match ($timezone) {
-                                        'WIB' => 'Asia/Jakarta',
-                                        'WITA' => 'Asia/Makassar',
-                                        'WIT' => 'Asia/Jayapura',
-                                        default => 'Asia/Jakarta'
-                                    };
-
-                                    return now()->timezone($timezone)->format('H:i');
+                                    return now()->format('Y-m-d');
                                 }
 
-                                return now()->format('H:i');
-                            }
-
-                            return null;
-                        })
-                        ->live()
-                        ->afterStateUpdated(function (Get $get, callable $set, $state) {
-                            try {
-                                $sekolahId = $get('sekolah_id');
-                                $tanggal = $get('tanggal');
-
-                                if ($sekolahId && $tanggal && $state) {
-                                    $sekolah = Sekolah::findOrFail($sekolahId);
-                                    $schoolTimezone = match ($sekolah->timezone) {
-                                        'WIB' => 'Asia/Jakarta',
-                                        'WITA' => 'Asia/Makassar',
-                                        'WIT' => 'Asia/Jay pura',
-                                        default => 'Asia/Jakarta'
-                                    };
-
-                                    $inputDateTime = Carbon::parse($tanggal . ' ' . $state, $schoolTimezone);
-                                    $dayOfWeek = $inputDateTime->locale('id')->dayName;
-
-                                    $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
-
-                                    if ($jadwal) {
-                                        $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
-                                        $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
-                                        $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
-                                        $jamPulangSelesai = $jamPulang->copy()->addHour();
-
-                                        if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
-                                            $set('keterangan', 'Masuk');
-                                        } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
-                                            $set('keterangan', 'Terlambat');
-                                        } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
-                                            $set('keterangan', 'Pulang');
-                                        } else {
-                                            $set('keterangan', null);
-                                        }
-                                    }
-                                }
-                            } catch (\Exception $e) {
-                                $set('keterangan', null);
-                            }
-                        })
-                        ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')),
-
-                    Forms\Components\Select::make('keterangan')
-                        ->options([
-                            'Masuk' => 'Masuk',
-                            'Terlambat' => 'Terlambat',
-                            'Pulang' => 'Pulang',
-                            'Sakit' => 'Sakit',
-                            'Izin' => 'Izin',
-                            'Alpa' => 'Alpa'
-                        ])
-                        ->native(false)
-                        ->default(function (Get $get) {
-                            $sekolahId = $get('sekolah_id');
-                            $tanggal = $get('tanggal');
-                            $waktu = $get('waktu');
-
-                            if ($sekolahId && $tanggal && $waktu) {
+                                return null;
+                            })
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, callable $set, $state) {
                                 try {
-                                    $sekolah = Sekolah::findOrFail($sekolahId);
-                                    $schoolTimezone = match ($sekolah->timezone) {
-                                        'WIB' => 'Asia/Jakarta',
-                                        'WITA' => 'Asia/Makassar',
-                                        'WIT' => 'Asia/Jayapura',
-                                        default => 'Asia/Jakarta'
-                                    };
+                                    $sekolahId = $get('sekolah_id');
+                                    $waktu = $get('waktu');
 
-                                    $inputDateTime = Carbon::parse($tanggal . ' ' . $waktu, $schoolTimezone);
-                                    $dayOfWeek = $inputDateTime->locale('id')->dayName;
+                                    if ($sekolahId && $state && $waktu) {
+                                        $sekolah = Sekolah::findOrFail($sekolahId);
+                                        $schoolTimezone = match ($sekolah->timezone) {
+                                            'WIB' => 'Asia/Jakarta',
+                                            'WITA' => 'Asia/Makassar',
+                                            'WIT' => 'Asia/Jayapura',
+                                            default => 'Asia/Jakarta'
+                                        };
 
-                                    $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
+                                        $inputDateTime = Carbon::parse($state . ' ' . $waktu, $schoolTimezone);
+                                        $dayOfWeek = $inputDateTime->locale('id')->dayName;
 
-                                    if ($jadwal) {
-                                        $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
-                                        $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
-                                        $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
-                                        $jamPulangSelesai = $jamPulang->copy()->addHour();
+                                        $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
 
-                                        if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
-                                            return 'Masuk';
-                                        } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
-                                            return 'Terlambat';
-                                        } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
-                                            return 'Pulang';
+                                        if ($jadwal) {
+                                            $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
+                                            $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
+                                            $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
+                                            $jamPulangSelesai = $jamPulang->copy()->addHour();
+
+                                            if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
+                                                $set('keterangan', 'Masuk');
+                                            } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
+                                                $set('keterangan', 'Terlambat');
+                                            } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
+                                                $set('keterangan', 'Pulang');
+                                            } else {
+                                                $set('keterangan', null);
+                                            }
                                         }
                                     }
                                 } catch (\Exception $e) {
-                                    // Log error if needed
+                                    $set('keterangan', null);
                                 }
-                            }
+                            })
+                            ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')),
 
-                            return null;
-                        })
-                        ->required(),
-                ])->columns(2)
+                        Forms\Components\TimePicker::make('waktu')
+                            ->required()
+                            ->default(function () {
+                                if (Auth::user()->sekolah_id) {
+                                    $timezone = cache()->remember(
+                                        "sekolah_timezone_" . Auth::user()->sekolah_id,
+                                        now()->addMinutes(30),
+                                        fn() => Auth::user()->sekolah->timezone
+                                    );
+
+                                    if ($timezone) {
+                                        $timezone = match ($timezone) {
+                                            'WIB' => 'Asia/Jakarta',
+                                            'WITA' => 'Asia/Makassar',
+                                            'WIT' => 'Asia/Jayapura',
+                                            default => 'Asia/Jakarta'
+                                        };
+
+                                        return now()->timezone($timezone)->format('H:i');
+                                    }
+
+                                    return now()->format('H:i');
+                                }
+
+                                return null;
+                            })
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, callable $set, $state) {
+                                try {
+                                    $sekolahId = $get('sekolah_id');
+                                    $tanggal = $get('tanggal');
+
+                                    if ($sekolahId && $tanggal && $state) {
+                                        $sekolah = Sekolah::findOrFail($sekolahId);
+                                        $schoolTimezone = match ($sekolah->timezone) {
+                                            'WIB' => 'Asia/Jakarta',
+                                            'WITA' => 'Asia/Makassar',
+                                            'WIT' => 'Asia/Jay pura',
+                                            default => 'Asia/Jakarta'
+                                        };
+
+                                        $inputDateTime = Carbon::parse($tanggal . ' ' . $state, $schoolTimezone);
+                                        $dayOfWeek = $inputDateTime->locale('id')->dayName;
+
+                                        $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
+
+                                        if ($jadwal) {
+                                            $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
+                                            $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
+                                            $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
+                                            $jamPulangSelesai = $jamPulang->copy()->addHour();
+
+                                            if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
+                                                $set('keterangan', 'Masuk');
+                                            } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
+                                                $set('keterangan', 'Terlambat');
+                                            } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
+                                                $set('keterangan', 'Pulang');
+                                            } else {
+                                                $set('keterangan', null);
+                                            }
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    $set('keterangan', null);
+                                }
+                            })
+                            ->disabled(fn (Get $get): bool => (bool) $get('is_loading_datetime')),
+
+                        Forms\Components\Select::make('keterangan')
+                            ->options([
+                                'Masuk' => 'Masuk',
+                                'Terlambat' => 'Terlambat',
+                                'Pulang' => 'Pulang',
+                                'Sakit' => 'Sakit',
+                                'Izin' => 'Izin',
+                                'Alpa' => 'Alpa'
+                            ])
+                            ->native(false)
+                            ->default(function (Get $get) {
+                                $sekolahId = $get('sekolah_id');
+                                $tanggal = $get('tanggal');
+                                $waktu = $get('waktu');
+
+                                if ($sekolahId && $tanggal && $waktu) {
+                                    try {
+                                        $sekolah = Sekolah::findOrFail($sekolahId);
+                                        $schoolTimezone = match ($sekolah->timezone) {
+                                            'WIB' => 'Asia/Jakarta',
+                                            'WITA' => 'Asia/Makassar',
+                                            'WIT' => 'Asia/Jayapura',
+                                            default => 'Asia/Jakarta'
+                                        };
+
+                                        $inputDateTime = Carbon::parse($tanggal . ' ' . $waktu, $schoolTimezone);
+                                        $dayOfWeek = $inputDateTime->locale('id')->dayName;
+
+                                        $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->first();
+
+                                        if ($jadwal) {
+                                            $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
+                                            $jamMasukSelesai = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai, $schoolTimezone);
+                                            $jamPulang = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang, $schoolTimezone);
+                                            $jamPulangSelesai = $jamPulang->copy()->addHour();
+
+                                            if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
+                                                return 'Masuk';
+                                            } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
+                                                return 'Terlambat';
+                                            } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
+                                                return 'Pulang';
+                                            }
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Log error if needed
+                                    }
+                                }
+
+                                return null;
+                            })
+                            ->nullable(),
+                    ])->columns(2)
             ]);
     }
 

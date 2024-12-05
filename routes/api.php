@@ -12,5 +12,5 @@ Route::get('/user', function (Request $request) {
 Route::prefix('esp32')->group(function () {
     Route::get('mesin', [ForMesinController::class, 'mesin']);
     Route::get('siswa', [ForMesinController::class, 'siswa']);
-    Route::post('absensi', [ForMesinController::class, 'absensi']);
 });
+Route::post('absensi', [ForMesinController::class, 'absensi']);

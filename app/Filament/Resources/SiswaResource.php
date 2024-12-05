@@ -38,6 +38,9 @@ class SiswaResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $user = Auth::user();
+        assert($user instanceof \App\Models\User);
+
         return $form
             ->schema([
                 Forms\Components\Section::make('Data Siswa')
@@ -54,11 +57,6 @@ class SiswaResource extends Resource
                         ->afterStateUpdated(function (callable $set) {
                             $set('kelas', null);
                         }),
-                    Forms\Components\TextInput::make('uid')
-                        ->label('UID')
-                        ->required()
-                        ->unique(Siswa::class, 'uid', ignoreRecord: true)
-                        ->maxLength(255),
                     Forms\Components\TextInput::make('nis')
                         ->label('NIS')
                         ->required()
@@ -72,6 +70,33 @@ class SiswaResource extends Resource
                         ->label('Nama Panggilan')
                         ->required()
                         ->maxLength(255),
+                    Forms\Components\Repeater::make('uidType')
+                        ->relationship()
+                        ->label('UID')
+                        ->schema([
+                            Forms\Components\Select::make('type')
+                                ->label('Tipe')
+                                ->options([
+                                    'rfid' => 'RFID',
+                                    'fingerprint' => 'Fingerprint',
+                                    'retina' => 'Retina',
+                                    'face_id' => 'Face ID',
+                                ])
+                                ->native(false)
+                                ->required(),
+                                Forms\Components\TextInput::make('value')
+                                    ->label('Kode Absensi')
+                                    ->password() // Mengatur input sebagai password
+                                    ->revealable(),
+                        ])
+                        ->default([
+                            ['type' => 'rfid', 'value' => null],
+                            ['type' => 'fingerprint', 'value' => null],
+                            ['type' => 'retina', 'value' => null],
+                            ['type' => 'face_id', 'value' => null],
+                        ])
+                        // ->addable($user->hasRole('super_admin'))
+                        ->columnSpanFull(),
                 ])
                 ->columns(2), // Optional: Set columns to 2 for better layout in this section
 
@@ -119,11 +144,6 @@ class SiswaResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->tooltip('Klik untuk melihat detail sekolah'), // Tambahkan searchable karena ini kolom penting
-
-                Tables\Columns\TextColumn::make('uid')
-                    ->label('Kode Absensi')
-                    ->searchable()
-                    ->sortable(), // Tambahkan sortable karena unique identifier
 
                 Tables\Columns\TextColumn::make('nis')
                     ->label('NIS')

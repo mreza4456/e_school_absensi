@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(Str::uuid());
+            $table->uuid('id')->primary();
             $table->foreignUuid('sekolah_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignUuid('vendor_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('name');
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('password');
             $table->text('avatar_url')->nullable();
             $table->boolean('status')->default(true);
+            $table->json('custom_fields')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

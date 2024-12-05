@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('wifis', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(Str::uuid());
+            $table->uuid('id')->primary();
             $table->foreignUuid('mesin_id')->constrained()->cascadeOnDelete();
             $table->string('ssid')->nullable();
             $table->string('password')->nullable();

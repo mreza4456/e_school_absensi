@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "vendor_id" => null,
                 "name" => "Admin SMKN 1 Pasuruan",
-                "email" => "adminsmkn1pasuruan@gmail.com",
+                "email" => "hnzsama.learn@gmail.com",
                 "email_verified_at" => null,
                 "password" => bcrypt('12345678'),
                 "avatar_url" => null,

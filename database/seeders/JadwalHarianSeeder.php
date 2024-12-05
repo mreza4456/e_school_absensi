@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class JadwalHarianSeeder extends Seeder
 {
@@ -14,77 +16,77 @@ class JadwalHarianSeeder extends Seeder
     {
         $jadwalHarianData = [
             [
-                "id" => "9d749f41-53cc-4b38-bc17-64d0383f5446",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Senin",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "04:00:00Z",
-                "jam_istirahat_selesai" => "05:30:00Z",
-                "jam_pulang" => "08:00:00Z",
-                "jam_pulang_selesai" => "10:00:00Z",
+                "jam_masuk" => "04:00:00Z",
+                "jam_masuk_selesai" => "05:30:00Z",
+                "jam_istirahat" => "10:30:00Z",
+                "jam_istirahat_selesai" => "11:30:00Z",
+                "jam_pulang" => "15:00:00Z",
+                "jam_pulang_selesai" => "17:00:00Z",
                 "is_libur" => false,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-62f4-4063-93de-0a0c7fcf7132",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Selasa",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "04:00:00Z",
-                "jam_istirahat_selesai" => "05:30:00Z",
-                "jam_pulang" => "08:00:00Z",
-                "jam_pulang_selesai" => "10:00:00Z",
+                "jam_masuk" => "04:00:00Z",
+                "jam_masuk_selesai" => "05:30:00Z",
+                "jam_istirahat" => "10:30:00Z",
+                "jam_istirahat_selesai" => "11:30:00Z",
+                "jam_pulang" => "15:00:00Z",
+                "jam_pulang_selesai" => "17:00:00Z",
                 "is_libur" => false,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-707d-4b43-9508-83f714000de7",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Rabu",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "04:00:00Z",
-                "jam_istirahat_selesai" => "05:30:00Z",
-                "jam_pulang" => "08:00:00Z",
-                "jam_pulang_selesai" => "10:00:00Z",
+                "jam_masuk" => "04:00:00Z",
+                "jam_masuk_selesai" => "05:30:00Z",
+                "jam_istirahat" => "10:30:00Z",
+                "jam_istirahat_selesai" => "11:30:00Z",
+                "jam_pulang" => "15:00:00Z",
+                "jam_pulang_selesai" => "17:00:00Z",
                 "is_libur" => false,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-7e84-4935-8f2f-a7132b1545e0",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Kamis",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "04:00:00Z",
-                "jam_istirahat_selesai" => "05:30:00Z",
-                "jam_pulang" => "08:00:00Z",
-                "jam_pulang_selesai" => "10:00:00Z",
+                "jam_masuk" => "04:00:00Z",
+                "jam_masuk_selesai" => "05:30:00Z",
+                "jam_istirahat" => "10:30:00Z",
+                "jam_istirahat_selesai" => "11:30:00Z",
+                "jam_pulang" => "15:00:00Z",
+                "jam_pulang_selesai" => "17:00:00Z",
                 "is_libur" => false,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-8c50-47f4-88e5-10fc73737493",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Jumat",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "03:00:00Z",
-                "jam_istirahat_selesai" => "04:00:00Z",
-                "jam_pulang" => "06:00:00Z",
-                "jam_pulang_selesai" => "08:00:00Z",
+                "jam_masuk" => "04:00:00Z",
+                "jam_masuk_selesai" => "05:30:00Z",
+                "jam_istirahat" => "10:30:00Z",
+                "jam_istirahat_selesai" => "11:30:00Z",
+                "jam_pulang" => "13:00:00Z",
+                "jam_pulang_selesai" => "15:00:00Z",
                 "is_libur" => false,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-991e-4013-a127-f195aee8f4cb",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Minggu",
                 "jam_masuk" => null,
@@ -98,19 +100,21 @@ class JadwalHarianSeeder extends Seeder
                 "updated_at" => "2024-11-10T05:35:36.000Z"
             ],
             [
-                "id" => "9d749f41-9298-461d-98d7-5896fb4e9d16",
+                "id" => Str::uuid(),
                 "sekolah_id" => "9d749f41-3bf2-48da-9dc0-438d930e5c79",
                 "hari" => "Sabtu",
-                "jam_masuk" => "22:30:00Z",
-                "jam_masuk_selesai" => "23:30:00Z",
-                "jam_istirahat" => "03:00:00Z",
-                "jam_istirahat_selesai" => "04:00:00Z",
-                "jam_pulang" => "08:00:00Z",
-                "jam_pulang_selesai" => "10:00:00Z",
-                "is_libur" => false,
+                "jam_masuk" => null,
+                "jam_masuk_selesai" => null,
+                "jam_istirahat" => null,
+                "jam_istirahat_selesai" => null,
+                "jam_pulang" => null,
+                "jam_pulang_selesai" => null,
+                "is_libur" => true,
                 "created_at" => "2024-11-10T05:35:36.000Z",
                 "updated_at" => "2024-11-18T20:16:27.000Z"
             ]
         ];
+
+        DB::table('jadwal_harians')->insert($jadwalHarianData);
     }
 }

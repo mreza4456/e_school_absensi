@@ -33,6 +33,11 @@ class Siswa extends Model
 
     public function absensi(): HasMany
     {
-        return $this->hasMany(Absensi::class, 'uid', 'uid');
+        return $this->hasMany(Absensi::class);
+    }
+
+    public function uidType(): HasMany
+    {
+        return $this->hasMany(UidType::class);
     }
 }

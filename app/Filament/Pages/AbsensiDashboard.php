@@ -39,6 +39,7 @@ class AbsensiDashboard extends Page
                         'bulan_ini' => 'Bulan Ini',
                         'bulan_lalu' => 'Bulan Lalu',
                     ])
+                    ->label('Rentang')
                     ->default('hari_ini')
                     ->native(false)
                     ->live(),

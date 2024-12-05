@@ -175,98 +175,95 @@ class ForMesinController extends Controller
     public function absensi(Request $request)
     {
         try {
-            // Validasi input
             $validatedData = $request->validate([
-                'kode_mesin' => 'required|string',
                 'sekolah_id' => 'required|string',
-                'uid' => 'required|string',
+                'siswa_id' => 'required|string',
                 'tanggal' => 'required|date',
-                'waktu' => 'required|date_format:H:i:s'
+                'waktu' => 'required|date_format:H:i:s',
+                'keterangan' => 'nullable|string'
             ]);
 
-            // Cek apakah mesin dengan kode_mesin dan sekolah_id valid
-            $mesin = Mesin::where('kode_mesin', $validatedData['kode_mesin'])
-                ->where('sekolah_id', $validatedData['sekolah_id'])
-                ->firstOrFail();
+            // // Daftar keterangan khusus yang tidak memperbolehkan absensi lain
+            // $specialAttendanceTypes = ['Izin', 'Sakit', 'Alpa'];
 
-            // Ambil data sekolah
-            $sekolah = Sekolah::findOrFail($validatedData['sekolah_id']);
+            // // Cek apakah siswa sudah memiliki absensi khusus di tanggal yang sama
+            // $existingSpecialAbsensi = Absensi::where('siswa_id', $validatedData['siswa_id'])
+            //     ->where('tanggal', $validatedData['tanggal'])
+            //     ->where('sekolah_id', $validatedData['sekolah_id'])
+            //     ->whereIn('keterangan', $specialAttendanceTypes)
+            //     ->first();
 
-            // Tentukan timezone sekolah
-            $schoolTimezone = $this->getSchoolTimezone($sekolah);
+            // if ($existingSpecialAbsensi) {
+            //     throw new \Exception("Siswa sudah tercatat {$existingSpecialAbsensi->keterangan} pada tanggal ini.");
+            // }
 
-            // Konversi input tanggal dan waktu ke timezone sekolah
-            $inputDateTime = Carbon::parse(
-                $validatedData['tanggal'] . ' ' . $validatedData['waktu'],
-                $schoolTimezone
-            );
+            // // Jika keterangan adalah salah satu tipe khusus, cek duplikasi
+            // if (in_array($validatedData['keterangan'] ?? '', $specialAttendanceTypes)) {
+            //     $existingAbsensi = Absensi::where('siswa_id', $validatedData['siswa_id'])
+            //         ->where('tanggal', $validatedData['tanggal'])
+            //         ->where('sekolah_id', $validatedData['sekolah_id'])
+            //         ->where('keterangan', $validatedData['keterangan'])
+            //         ->first();
 
-            // Tentukan hari dalam Bahasa Indonesia
-            $dayOfWeek = $inputDateTime->locale('id')->dayName;
+            //     if ($existingAbsensi) {
+            //         throw new \Exception("Absensi {$validatedData['keterangan']} sudah ada untuk tanggal ini.");
+            //     }
+            // }
 
-            // Ambil jadwal harian sekolah
-            $jadwal = $sekolah->jadwalHarian()
-                ->where('hari', $dayOfWeek)
-                ->firstOrFail();
+            // // Jika keterangan tidak ada, maka tentukan otomatis
+            // if (empty($validatedData['keterangan'])) {
+            //     $sekolah = Sekolah::findOrFail($validatedData['sekolah_id']);
+            //     $timezone = $this->getSchoolTimezone($sekolah);
+            //     $inputDateTime = Carbon::parse("{$validatedData['tanggal']} {$validatedData['waktu']}", $timezone);
+            //     $dayOfWeek = $inputDateTime->locale('id')->dayName;
 
-            // Konversi waktu jadwal ke Carbon
-            $jamMasuk = Carbon::parse(
-                $inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk,
-                $schoolTimezone
-            );
-            $jamMasukSelesai = Carbon::parse(
-                $inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk_selesai,
-                $schoolTimezone
-            );
-            $jamPulang = Carbon::parse(
-                $inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_pulang,
-                $schoolTimezone
-            );
-            $jamPulangSelesai = $jamPulang->copy()->addHour();
+            //     // Get school schedule
+            //     $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->firstOrFail();
 
-            // Tentukan keterangan absensi
-            if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
-                $keterangan = 'Masuk';
-            } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
-                $keterangan = 'Terlambat';
-            } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
-                $keterangan = 'Pulang';
-            } else {
-                throw new \Exception('Waktu absensi di luar jam sekolah.');
-            }
+            //     // Convert schedule times to Carbon instances
+            //     $baseDate = $inputDateTime->format('Y-m-d');
+            //     $jamMasuk = Carbon::parse("$baseDate {$jadwal->jam_masuk}", $timezone);
+            //     $jamMasukSelesai = Carbon::parse("$baseDate {$jadwal->jam_masuk_selesai}", $timezone);
+            //     $jamPulang = Carbon::parse("$baseDate {$jadwal->jam_pulang}", $timezone);
+            //     $jamPulangSelesai = $jamPulang->copy()->addHour();
 
-            // Cek absensi yang sudah ada
-            $existingAbsensi = Absensi::where('uid', $validatedData['uid'])
-                ->where('tanggal', $inputDateTime->toDateString())
-                ->where('sekolah_id', $validatedData['sekolah_id'])
-                ->where(function ($query) use ($keterangan) {
-                    $query->where('keterangan', $keterangan)
-                        ->orWhere(function ($q) use ($keterangan) {
-                            if ($keterangan === 'Masuk') {
-                                $q->where('keterangan', 'Terlambat');
-                            } elseif ($keterangan === 'Terlambat') {
-                                $q->where('keterangan', 'Masuk');
-                            }
-                        });
-                })
-                ->first();
+            //     // Tentukan keterangan otomatis
+            //     if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
+            //         $validatedData['keterangan'] = 'Masuk';
+            //     } elseif ($inputDateTime->between($jamMasukSelesai, $jamPulang)) {
+            //         $validatedData['keterangan'] = 'Terlambat';
+            //     } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
+            //         $validatedData['keterangan'] = 'Pulang';
+            //     } else {
+            //         throw new \Exception('Waktu absensi di luar jam sekolah.');
+            //     }
+            // }
 
-            if ($existingAbsensi) {
-                if ($existingAbsensi->keterangan === $keterangan) {
-                    throw new \Exception("Absensi {$keterangan} sudah ada untuk tanggal ini.");
-                } else {
-                    throw new \Exception("Sudah ada absensi {$existingAbsensi->keterangan} untuk tanggal ini.");
-                }
-            }
+            // // Cek duplikasi untuk keterangan Masuk dan Terlambat
+            // $existingAbsensi = Absensi::where('siswa_id', $validatedData['siswa_id'])
+            //     ->where('tanggal', $validatedData['tanggal'])
+            //     ->where('sekolah_id', $validatedData['sekolah_id'])
+            //     ->where(function ($query) use ($validatedData) {
+            //         $query->where('keterangan', $validatedData['keterangan'])
+            //             ->orWhere(function ($q) use ($validatedData) {
+            //                 if ($validatedData['keterangan'] === 'Masuk') {
+            //                     $q->where('keterangan', 'Terlambat');
+            //                 } elseif ($validatedData['keterangan'] === 'Terlambat') {
+            //                     $q->where('keterangan', 'Masuk');
+            //                 }
+            //             });
+            //     })
+            //     ->first();
 
-            // Buat data absensi baru
-            $absensi = Absensi::create([
-                'sekolah_id' => $validatedData['sekolah_id'],
-                'uid' => $validatedData['uid'],
-                'tanggal' => $inputDateTime->toDateString(),
-                'waktu' => $inputDateTime->toTimeString(),
-                'keterangan' => $keterangan,
-            ]);
+            // if ($existingAbsensi) {
+            //     $message = $existingAbsensi->keterangan === $validatedData['keterangan']
+            //         ? "Absensi {$validatedData['keterangan']} sudah ada untuk tanggal ini."
+            //         : "Sudah ada absensi {$existingAbsensi->keterangan} untuk tanggal ini.";
+            //     throw new \Exception($message);
+            // }
+
+            // Create attendance record
+            $absensi = Absensi::create($validatedData);
 
             return response()->json([
                 'status' => 'success',
@@ -274,7 +271,6 @@ class ForMesinController extends Controller
                 'data' => [
                     'id' => $absensi->id,
                     'sekolah_id' => $absensi->sekolah_id,
-                    'uid' => $absensi->uid,
                     'tanggal' => $absensi->tanggal,
                     'waktu' => $absensi->waktu,
                     'keterangan' => $absensi->keterangan

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Mesin;
 use App\Models\Sekolah;
+use App\Models\UidType;
 use App\Models\User;
 use App\Models\Vendor;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -30,7 +31,8 @@ class DatabaseSeeder extends Seeder
             WifiSeeder::class,
             JadwalHarianSeeder::class,
             KelasSeeder::class,
-            SiswaSeeder::class
+            SiswaSeeder::class,
+            UidTypeSeeder::class
         ]);
     }
 }

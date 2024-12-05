@@ -19,6 +19,7 @@ class CreateAbsensi extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         unset($data['kelas_filter']);
+        // dd($data);
         try {
             $user = Auth::user();
             assert($user instanceof User);
@@ -33,7 +34,7 @@ class CreateAbsensi extends CreateRecord
             $specialAttendanceTypes = ['Izin', 'Sakit', 'Alpa'];
 
             // Cek apakah siswa sudah memiliki absensi khusus di tanggal yang sama
-            $existingSpecialAbsensi = Absensi::where('uid', $data['uid'])
+            $existingSpecialAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
                 ->where('tanggal', $data['tanggal'])
                 ->where('sekolah_id', $data['sekolah_id'])
                 ->whereIn('keterangan', $specialAttendanceTypes)
@@ -46,7 +47,7 @@ class CreateAbsensi extends CreateRecord
 
             // Jika keterangan adalah salah satu tipe khusus, cek duplikasi
             if (in_array($data['keterangan'], $specialAttendanceTypes)) {
-                $existingAbsensi = Absensi::where('uid', $data['uid'])
+                $existingAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
                     ->where('tanggal', $data['tanggal'])
                     ->where('sekolah_id', $data['sekolah_id'])
                     ->where('keterangan', $data['keterangan'])
@@ -93,7 +94,7 @@ class CreateAbsensi extends CreateRecord
             }
 
             // Check for existing attendance untuk keterangan Masuk dan Terlambat
-            $existingAbsensi = Absensi::where('uid', $data['uid'])
+            $existingAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
                 ->where('tanggal', $data['tanggal'])
                 ->where('sekolah_id', $data['sekolah_id'])
                 ->where(function ($query) use ($data) {
@@ -118,6 +119,7 @@ class CreateAbsensi extends CreateRecord
 
             return $data;
         } catch (\Exception $e) {
+            // dd($e);
             Notification::make()
                 ->title('Error')
                 ->body($e->getMessage())
@@ -126,6 +128,7 @@ class CreateAbsensi extends CreateRecord
 
             $this->halt();
         }
+        return $data;
     }
 
     protected function getRedirectUrl(): string
