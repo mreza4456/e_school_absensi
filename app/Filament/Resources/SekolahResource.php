@@ -12,6 +12,14 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\Tabs;
+use Filament\Infolists\Components\Tabs\Tab;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
@@ -44,6 +52,7 @@ class SekolahResource extends Resource
                     ->description('Enter School Information')
                     ->schema([
                         Forms\Components\FileUpload::make('logo')
+                            ->label('Logo Sekolah')
                             ->image()
                             ->avatar()
                             ->directory('logos')
@@ -97,7 +106,7 @@ class SekolahResource extends Resource
                         Forms\Components\Select::make('kota_code')
                             ->label('Kabupaten/Kota')
                             ->required()
-                            ->options(fn (Get $get): Collection => Kota::query()
+                            ->options(fn(Get $get): Collection => Kota::query()
                                 ->where('provinsi_code', $get('provinsi_code'))
                                 ->get()
                                 ->pluck('nama', 'code'))
@@ -158,46 +167,46 @@ class SekolahResource extends Resource
                                                 Forms\Components\Group::make([
                                                     Forms\Components\TimePicker::make('jam_masuk')
                                                         ->label('Jam Masuk')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                     Forms\Components\TimePicker::make('jam_masuk_selesai')
                                                         ->label('Batas Keterlambatan')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                 ]),
                                                 Forms\Components\Group::make([
                                                     Forms\Components\TimePicker::make('jam_istirahat')
                                                         ->label('Mulai Istirahat')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                     Forms\Components\TimePicker::make('jam_istirahat_selesai')
                                                         ->label('Selesai Istirahat')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                 ]),
                                                 Forms\Components\Group::make([
                                                     Forms\Components\TimePicker::make('jam_pulang')
                                                         ->label('Jam Pulang')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                     Forms\Components\TimePicker::make('jam_pulang_selesai')
                                                         ->label('Batas Kepulangan')
-                                                        ->required(fn (Get $get): bool => ! $get('is_libur'))
+                                                        ->required(fn(Get $get): bool => ! $get('is_libur'))
                                                         ->nullable()
-                                                        ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                                        ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                                 ]),
                                             ])
-                                            ->visible(fn (Get $get): bool => ! $get('is_libur')),
+                                            ->visible(fn(Get $get): bool => ! $get('is_libur')),
                                     ])
                                     ->defaultItems(7) // Changed from 7 to 0
                                     ->addActionLabel('Tambah Jadwal Harian')
                                     ->columnSpanFull()
-                                    ->itemLabel(fn (array $state): ?string => $state['hari'] ?? null)
+                                    ->itemLabel(fn(array $state): ?string => $state['hari'] ?? null)
                                     ->reorderableWithButtons()
                                     ->collapsible()
                             ])
@@ -219,7 +228,7 @@ class SekolahResource extends Resource
                     ->label('NPSN')
                     ->searchable()
                     ->sortable()
-                    ->copyable(), // NPSN biasanya perlu dicopy
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('nama')
                     ->label('Nama Sekolah')
@@ -245,7 +254,7 @@ class SekolahResource extends Resource
 
                 // Kolom lokasi biasanya difilter, tidak perlu sort
                 Tables\Columns\TextColumn::make('provinsi.nama')
-                    ->url(fn ($record) => route('filament.admin.resources.provinsis.view', ['record' => $record->provinsi->id]))
+                    ->url(fn($record) => route('filament.admin.resources.provinsis.view', ['record' => $record->provinsi->id]))
                     ->icon('heroicon-m-building-library')
                     ->color('primary')
                     ->badge()
@@ -255,7 +264,7 @@ class SekolahResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('kota.nama')
-                    ->url(fn ($record) => route('filament.admin.resources.kotas.view', ['record' => $record->kota->id]))
+                    ->url(fn($record) => route('filament.admin.resources.kotas.view', ['record' => $record->kota->id]))
                     ->icon('heroicon-m-building-library')
                     ->color('success')
                     ->badge()
@@ -285,7 +294,7 @@ class SekolahResource extends Resource
                     ->tooltip('Klik untuk chat WhatsApp'), // Nomor telepon sering perlu dicopy
 
                 Tables\Columns\TextColumn::make('email')
-                    ->url(fn ($record) => 'mailto:' . $record->email)
+                    ->url(fn($record) => 'mailto:' . $record->email)
                     ->openUrlInNewTab()
                     ->icon('heroicon-m-envelope')
                     ->color('success')
@@ -349,7 +358,7 @@ class SekolahResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['npsn'],
-                            fn (Builder $query, $value): Builder => $query->where('npsn', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('npsn', 'like', "%{$value}%")
                         );
                     }),
 
@@ -363,7 +372,7 @@ class SekolahResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['nama'],
-                            fn (Builder $query, $value): Builder => $query->where('nama', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('nama', 'like', "%{$value}%")
                         );
                     }),
 
@@ -377,7 +386,7 @@ class SekolahResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['nama_kepala'],
-                            fn (Builder $query, $value): Builder => $query->where('nama_kepala', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('nama_kepala', 'like', "%{$value}%")
                         );
                     }),
 
@@ -412,6 +421,190 @@ class SekolahResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                // School Basic Information Section
+                Section::make('Informasi Sekolah')
+                    ->schema([
+                        // Top Grid with Logo and Key Details
+                        Grid::make(2)
+                            ->schema([
+                                // School Logo
+                                ImageEntry::make('logo')
+                                    ->label('Logo Sekolah')
+                                    ->circular()
+                                    ->size(150),
+
+                                // School Identification Grid
+                                Grid::make(1)
+                                    ->schema([
+                                        TextEntry::make('nama')
+                                            ->label('Nama Sekolah')
+                                            ->icon('heroicon-m-building-library')
+                                            ->color('primary')
+                                            ->badge()
+                                            ->weight('bold')
+                                            ->size('xl'),
+
+                                        TextEntry::make('npsn')
+                                            ->label('NPSN')
+                                            ->icon('heroicon-m-identification'),
+
+                                        TextEntry::make('jenjang')
+                                            ->label('Jenjang Pendidikan')
+                                            ->icon('heroicon-m-academic-cap')
+                                            ->badge()
+                                            ->color('info'),
+
+                                        TextEntry::make('status')
+                                            ->label('Status Aktif')
+                                            ->badge()
+                                            ->color(fn($state) => $state ? 'success' : 'danger')
+                                            ->formatStateUsing(fn($state) => $state ? 'Aktif' : 'Tidak Aktif')
+                                    ])
+                            ]),
+
+                        // Principal and Identification Details
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('nama_kepala')
+                                    ->label('Nama Kepala Sekolah')
+                                    ->icon('heroicon-m-user')
+                                    ->weight('semibold'),
+
+                                TextEntry::make('nik_kepala')
+                                    ->label('NIK Kepala Sekolah')
+                                    ->icon('heroicon-m-identification')
+                            ])
+                    ]),
+
+                // Contact and Location Section
+                Section::make('Kontak dan Lokasi')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                // Contact Details
+                                Grid::make(1)
+                                    ->schema([
+                                        TextEntry::make('no_telp')
+                                            ->label('Nomor Telepon')
+                                            ->icon('heroicon-m-phone')
+                                            ->color('primary')
+                                            ->url(fn($record) => 'tel:' . $record->no_telp),
+
+                                        TextEntry::make('email')
+                                            ->label('Email')
+                                            ->icon('heroicon-m-envelope')
+                                            ->color('primary')
+                                            ->url(fn($record) => 'mailto:' . $record->email)
+                                    ]),
+
+                                // Location Details
+                                Grid::make(1)
+                                    ->schema([
+                                        TextEntry::make('provinsi.nama')
+                                            ->label('Provinsi')
+                                            ->icon('heroicon-m-map'),
+
+                                        TextEntry::make('kota.nama')
+                                            ->label('Kabupaten/Kota')
+                                            ->icon('heroicon-m-building-office'),
+
+                                        TextEntry::make('alamat')
+                                            ->label('Alamat Lengkap')
+                                            ->icon('heroicon-m-map-pin')
+                                    ])
+                            ])
+                    ]),
+
+                // Operational Schedule Section
+                Section::make('Jadwal Operasional')
+                    ->schema([
+                        TextEntry::make('timezone')
+                            ->label('Zona Waktu')
+                            ->icon('heroicon-m-clock'),
+
+                        RepeatableEntry::make('jadwalHarian')
+                            ->label('Jadwal Harian')
+                            ->schema([
+                                Grid::make(3)
+                                    ->schema([
+                                        TextEntry::make('hari')
+                                            ->label('Hari')
+                                            ->icon('heroicon-m-calendar-days'),
+
+                                        TextEntry::make('is_libur')
+                                            ->label('Status Hari')
+                                            ->badge()
+                                            ->color(fn($state) => $state ? 'danger' : 'success')
+                                            ->formatStateUsing(fn($state) => $state ? 'Libur' : 'Aktif'),
+
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextEntry::make('jam_masuk')
+                                                    ->label('Jam Masuk')
+                                                    ->icon('heroicon-m-clock'),
+
+                                                TextEntry::make('jam_pulang')
+                                                    ->label('Jam Pulang')
+                                                    ->icon('heroicon-m-clock')
+                                            ])
+                                    ])
+                            ])
+                            ->grid(2)
+                    ]),
+
+                // Institutional Statistics Section
+                Section::make('Statistik Institusi')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('total_users')
+                                    ->label('Total Pengguna')
+                                    ->icon('heroicon-m-users')
+                                    ->state(fn($record) => $record->user()->count())
+                                    ->badge()
+                                    ->color('primary'),
+
+                                TextEntry::make('total_students')
+                                    ->label('Total Siswa')
+                                    ->icon('heroicon-m-academic-cap')
+                                    ->state(fn($record) => $record->siswa()->count())
+                                    ->badge()
+                                    ->color('success'),
+
+                                TextEntry::make('total_classes')
+                                    ->label('Total Kelas')
+                                    ->icon('heroicon-m-building-library')
+                                    ->state(fn($record) => $record->kelas()->count())
+                                    ->badge()
+                                    ->color('info')
+                            ])
+                    ]),
+
+                // Additional Information Section
+                Section::make('Informasi Tambahan')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('created_at')
+                                    ->label('Dibuat Pada')
+                                    ->dateTime(),
+
+                                TextEntry::make('updated_at')
+                                    ->label('Terakhir Diubah')
+                                    ->dateTime(),
+
+                                TextEntry::make('deleted_at')
+                                    ->label('Dihapus Pada')
+                                    ->dateTime(),
+                            ])
+                    ])
             ]);
     }
 

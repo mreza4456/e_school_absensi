@@ -45,25 +45,21 @@ class EditUser extends EditRecord
         $user = Auth::user();
         assert($user instanceof User);
 
-        // Pastikan array roles ada
-        $roles = $data['roles'] ?? [];
+        // Get the selected roles as array
+        $selectedRoles = isset($data['roles']) ? (array)$data['roles'] : [];
 
-        // Tambahkan role ID 2 ke array
-        $roles[] = 2;
-
-        // Update data dengan roles yang baru
-        $data['roles'] = $roles;
-
-        // Handle image upload
-        if (isset($data['image']) && $data['image'] !== $this->record->image) {
-            if ($this->record->image) {
-                Storage::disk('public')->delete($this->record->image);
-            }
+        // Make sure all existing roles are preserved
+        if ($this->record) {
+            $existingRoles = $this->record->roles()->pluck('id')->toArray();
+            $selectedRoles = array_unique(array_merge($selectedRoles, $existingRoles));
         }
 
-        // Jika bukan superadmin, set sekolah_id atau vendor_id sesuai user yang login
+        // Update the roles data
+        $data['roles'] = $selectedRoles;
+
+        // Handle organization assignment
         if (!$user->hasRole('super_admin')) {
-            if ($user-> hasRole('admin_sekolah') && $user->sekolah_id) {
+            if ($user->hasRole('admin_sekolah') && $user->sekolah_id) {
                 $data['sekolah_id'] = $user->sekolah_id;
                 $data['vendor_id'] = null;
             } elseif ($user->vendor_id) {

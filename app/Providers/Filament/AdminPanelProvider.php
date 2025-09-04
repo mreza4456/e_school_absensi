@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Register;
 use App\Filament\Pages\AbsensiDashboard;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\UserResource\Widgets\YourModelWidget;
@@ -49,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             // ->profile(isSimple: false)
-            ->registration()
+            // ->registration(Register::class)
             ->passwordReset()
             ->emailVerification()
             ->brandName('eSchool')

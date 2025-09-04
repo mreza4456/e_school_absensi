@@ -38,22 +38,22 @@ class WifiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Wifi Information')
-                ->description('Enter Wifi Information')
-                ->schema([
-                    Forms\Components\Select::make('mesin_id')
-                        ->required()
-                        ->relationship(name: 'mesin', titleAttribute: 'kode_mesin')
-                        ->searchable()
-                        ->disabled(fn () => Auth::user()->sekolah_id !== null)
-                        ->preload()
-                        ->columnSpanFull(),
-                    Forms\Components\TextInput::make('ssid')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('password')
-                        ->revealable()
-                        ->password()
-                        ->maxLength(255),
-                ])->columns(2)
+                    ->description('Enter Wifi Information')
+                    ->schema([
+                        Forms\Components\Select::make('mesin_id')
+                            ->required()
+                            ->relationship(name: 'mesin', titleAttribute: 'kode_mesin')
+                            ->searchable()
+                            ->disabled(fn() => Auth::user()->sekolah_id !== null)
+                            ->preload()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('ssid')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('password')
+                            ->revealable()
+                            ->password()
+                            ->maxLength(255),
+                    ])->columns(2)
             ]);
     }
 
@@ -66,7 +66,7 @@ class WifiResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('mesin.kode_mesin')
-                    ->url(fn ($record) => route('filament.admin.resources.mesins.view', ['record' => $record->mesin_id]))
+                    ->url(fn($record) => route('filament.admin.resources.mesins.view', ['record' => $record->mesin_id]))
                     ->icon('heroicon-m-cpu-chip')
                     ->color('primary')
                     ->badge()

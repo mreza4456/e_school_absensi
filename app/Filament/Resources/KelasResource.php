@@ -9,6 +9,11 @@ use App\Models\Kelas;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -18,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class KelasResource extends Resource
 {
@@ -34,20 +40,20 @@ class KelasResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Informasi Kelas')
-                ->description('Masukan data kelas')
-                ->schema([
-                    Forms\Components\Select::make('sekolah_id')
-                        ->required()
-                        ->relationship(name: 'sekolah', titleAttribute: 'nama')
-                        ->searchable()
-                        ->preload()
-                        ->hidden(fn () => Auth::user()->sekolah_id !== null)
-                        ->dehydrated(),
-                    Forms\Components\TextInput::make('nama_kelas')
-                        ->label('Nama Kelas')
-                        ->required()
-                        ->maxLength(255),
-                ])->columns(2),
+                    ->description('Masukan data kelas')
+                    ->schema([
+                        Forms\Components\Select::make('sekolah_id')
+                            ->required()
+                            ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->hidden(fn() => Auth::user()->sekolah_id !== null)
+                            ->dehydrated(),
+                        Forms\Components\TextInput::make('nama_kelas')
+                            ->label('Nama Kelas')
+                            ->required()
+                            ->maxLength(255),
+                    ])->columns(2),
             ]);
     }
 
@@ -60,8 +66,8 @@ class KelasResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('sekolah.nama')
-                    ->hidden(fn () => Auth::user()->sekolah_id != null)
-                    ->url(fn ($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
+                    ->hidden(fn() => Auth::user()->sekolah_id != null)
+                    ->url(fn($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
                     ->icon('heroicon-m-building-library')
                     ->color('primary')
                     ->badge()
@@ -81,7 +87,7 @@ class KelasResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])->defaultSort(fn () => Auth::user()->sekolah_id ? 'nama_kelas' : 'sekolah.nama')
+            ])->defaultSort(fn() => Auth::user()->sekolah_id ? 'nama_kelas' : 'sekolah.nama')
             ->filters([
                 SelectFilter::make('sekolah')
                     ->relationship('sekolah', 'nama')
@@ -89,7 +95,7 @@ class KelasResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn () => Auth::user()->sekolah_id != null),
+                    ->hidden(fn() => Auth::user()->sekolah_id != null),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -99,6 +105,134 @@ class KelasResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                // Class Basic Information Section
+                Section::make('Informasi Kelas')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                // School Information
+                                TextEntry::make('sekolah.nama')
+                                    ->label('Sekolah')
+                                    ->icon('heroicon-m-building-library')
+                                    ->color('primary')
+                                    ->badge()
+                                    ->url(fn($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
+                                    ->hidden(fn() => Auth::user()->sekolah_id !== null),
+
+                                // Class Name
+                                TextEntry::make('nama_kelas')
+                                    ->label('Nama Kelas')
+                                    ->icon('heroicon-m-user-group')
+                                    ->color('info')
+                                    ->badge()
+                            ])
+                    ]),
+
+                // Student Information Section
+                Section::make('Daftar Siswa')
+                    ->schema([
+                        // Total Students in the Class
+                        TextEntry::make('total_siswa')
+                            ->label('Jumlah Siswa')
+                            ->state(fn($record) => $record->siswa()->count())
+                            ->icon('heroicon-m-users')
+                            ->color('primary')
+                            ->badge(),
+
+                        // Repeatable Entry for Students
+                        RepeatableEntry::make('siswa')
+                            ->label('Siswa dalam Kelas')
+                            ->schema([
+                                Grid::make(3)
+                                    ->schema([
+                                        // Student Name with Link to Student Detail
+                                        TextEntry::make('nama')
+                                            ->label('Nama Siswa')
+                                            ->url(fn($record) => route('filament.admin.resources.siswas.view', ['record' => $record->id]))
+                                            ->icon('heroicon-m-user'),
+
+                                        // Student Gender
+                                        TextEntry::make('jk')
+                                            ->label('Jenis Kelamin')
+                                            ->formatStateUsing(fn($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan')
+                                            ->color(fn($record) => $record->jk === 'L' ? 'info' : 'danger')
+                                            ->badge(),
+
+                                        // Student Contact Information
+                                        TextEntry::make('telp_ortu')
+                                            ->label('Telepon Orang Tua')
+                                            ->icon('heroicon-m-phone')
+                                            ->url(function ($record) {
+                                                $phone = preg_replace('/[^0-9]/', '', $record->telp_ortu);
+                                                $phone = Str::startsWith($phone, '0') ? Str::substr($phone, 1) : $phone;
+                                                $phone = '62' . $phone;
+                                                return 'https://wa.me/' . $phone;
+                                            })
+                                            ->openUrlInNewTab()
+                                    ])
+                            ])
+                            ->grid(2)
+                    ]),
+
+                // Attendance Statistics Section
+                Section::make('Statistik Kehadiran')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                // Total Attendance Entries
+                                TextEntry::make('total_absensi')
+                                    ->label('Total Absensi')
+                                    ->state(fn($record) => $record->siswa->flatMap->absensi->count())
+                                    ->icon('heroicon-m-document-check')
+                                    ->color('primary')
+                                    ->badge(),
+
+                                // Attendance Status Distribution
+                                TextEntry::make('status_absensi')
+                                    ->label('Distribusi Status')
+                                    ->state(function ($record) {
+                                        $absensiStatus = $record->siswa->flatMap->absensi
+                                            ->groupBy('keterangan')
+                                            ->map->count()
+                                            ->toArray();
+                                        return json_encode($absensiStatus);
+                                    })
+                                    ->formatStateUsing(function ($state) {
+                                        $statuses = json_decode($state, true);
+                                        return collect($statuses)
+                                            ->map(fn($count, $status) => "{$status}: {$count}")
+                                            ->implode(', ');
+                                    })
+                                    ->icon('heroicon-m-chart-pie')
+                                    ->color('info')
+                            ])
+                    ]),
+
+                // Metadata Section
+                Section::make('Informasi Tambahan')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('created_at')
+                                    ->label('Dibuat Pada')
+                                    ->dateTime(),
+
+                                TextEntry::make('updated_at')
+                                    ->label('Terakhir Diubah')
+                                    ->dateTime(),
+
+                                TextEntry::make('deleted_at')
+                                    ->label('Dihapus Pada')
+                                    ->dateTime(),
+                            ])
+                    ])
             ]);
     }
 

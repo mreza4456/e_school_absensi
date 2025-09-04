@@ -48,7 +48,7 @@ class KotaResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('provinsi.nama')
-                    ->url(fn ($record) => route('filament.admin.resources.provinsis.view', ['record' => $record->provinsi->id]))
+                    ->url(fn($record) => route('filament.admin.resources.provinsis.view', ['record' => $record->provinsi->id]))
                     ->icon('heroicon-m-building-library')
                     ->color('primary')
                     ->badge()

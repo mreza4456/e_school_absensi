@@ -147,118 +147,118 @@ return new class extends Migration
     private function pgsqlTrigger()
     {
         return "
-        CREATE OR REPLACE FUNCTION check_absensi_before_insert()
-RETURNS TRIGGER AS $$
-DECLARE
-    v_sekolah RECORD;
-    v_jadwal RECORD;
-    v_existing_special RECORD;
-    v_existing_regular RECORD;
-    v_timezone TEXT;
-    v_day_name TEXT;
-    v_input_time TIME;
-BEGIN
-    -- 1. Cek sekolah_id dan dapatkan timezone serta jadwal
-    SELECT * INTO v_sekolah
-    FROM sekolahs
-    WHERE id = NEW.sekolah_id;
+            CREATE OR REPLACE FUNCTION check_absensi_before_insert()
+            RETURNS TRIGGER AS $$
+            DECLARE
+                v_sekolah RECORD;
+                v_jadwal RECORD;
+                v_existing_special RECORD;
+                v_existing_regular RECORD;
+                v_timezone TEXT;
+                v_day_name TEXT;
+                v_input_time TIME;
+            BEGIN
+                -- 1. Cek sekolah_id dan dapatkan timezone serta jadwal
+                SELECT * INTO v_sekolah
+                FROM sekolahs
+                WHERE id = NEW.sekolah_id;
 
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Sekolah dengan ID % tidak ditemukan', NEW.sekolah_id;
-    END IF;
+                IF NOT FOUND THEN
+                    RAISE EXCEPTION 'Sekolah dengan ID % tidak ditemukan', NEW.sekolah_id;
+                END IF;
 
-    -- Tentukan nama hari
-    SELECT CASE EXTRACT(DOW FROM NEW.tanggal)
-        WHEN 1 THEN 'Senin'
-        WHEN 2 THEN 'Selasa'
-        WHEN 3 THEN 'Rabu'
-        WHEN 4 THEN 'Kamis'
-        WHEN 5 THEN 'Jumat'
-        WHEN 6 THEN 'Sabtu'
-        WHEN 0 THEN 'Minggu'
-    END INTO v_day_name;
+                -- Tentukan nama hari
+                SELECT CASE EXTRACT(DOW FROM NEW.tanggal)
+                    WHEN 1 THEN 'Senin'
+                    WHEN 2 THEN 'Selasa'
+                    WHEN 3 THEN 'Rabu'
+                    WHEN 4 THEN 'Kamis'
+                    WHEN 5 THEN 'Jumat'
+                    WHEN 6 THEN 'Sabtu'
+                    WHEN 0 THEN 'Minggu'
+                END INTO v_day_name;
 
-    -- Dapatkan jadwal untuk hari tersebut
-    SELECT * INTO v_jadwal
-    FROM jadwal_harians
-    WHERE sekolah_id = NEW.sekolah_id
-    AND hari = v_day_name;
+                -- Dapatkan jadwal untuk hari tersebut
+                SELECT * INTO v_jadwal
+                FROM jadwal_harians
+                WHERE sekolah_id = NEW.sekolah_id
+                AND hari = v_day_name;
 
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Jadwal tidak ditemukan untuk hari %', v_day_name;
-    END IF;
+                IF NOT FOUND THEN
+                    RAISE EXCEPTION 'Jadwal tidak ditemukan untuk hari %', v_day_name;
+                END IF;
 
-    -- 2. Cek apakah sudah ada absensi khusus (Izin, Sakit, Alpa)
-    SELECT * INTO v_existing_special
-    FROM absensis
-    WHERE siswa_id = NEW.siswa_id
-    AND tanggal = NEW.tanggal::DATE
-    AND sekolah_id = NEW.sekolah_id
-    AND keterangan IN ('Izin', 'Sakit', 'Alpa')
-    LIMIT 1;
+                -- 2. Cek apakah sudah ada absensi khusus (Izin, Sakit, Alpa)
+                SELECT * INTO v_existing_special
+                FROM absensis
+                WHERE siswa_id = NEW.siswa_id
+                AND tanggal = NEW.tanggal::DATE
+                AND sekolah_id = NEW.sekolah_id
+                AND keterangan IN ('Izin', 'Sakit', 'Alpa')
+                LIMIT 1;
 
-    IF FOUND THEN
-        RAISE EXCEPTION 'Siswa sudah tercatat % pada tanggal ini', v_existing_special.keterangan;
-    END IF;
+                IF FOUND THEN
+                    RAISE EXCEPTION 'Siswa sudah tercatat % pada tanggal ini', v_existing_special.keterangan;
+                END IF;
 
-    -- 3. Tentukan keterangan berdasarkan waktu
-    v_input_time := NEW.waktu::TIME;
+                -- 3. Tentukan keterangan berdasarkan waktu
+                v_input_time := NEW.waktu::TIME;
 
-    IF NEW.keterangan IS NULL OR NEW.keterangan = '' THEN
-        IF v_input_time BETWEEN v_jadwal.jam_masuk AND v_jadwal.jam_masuk_selesai THEN
-            NEW.keterangan := 'Masuk';
-        ELSIF v_input_time > v_jadwal.jam_masuk_selesai AND v_input_time < v_jadwal.jam_pulang THEN
-            NEW.keterangan := 'Terlambat';
-        ELSIF v_input_time BETWEEN v_jadwal.jam_pulang AND (v_jadwal.jam_pulang + INTERVAL '1 hour') THEN
-            NEW.keterangan := 'Pulang';
-        ELSE
-            RAISE EXCEPTION 'Waktu absensi di luar jam sekolah';
-        END IF;
-    END IF;
+                IF NEW.keterangan IS NULL OR NEW.keterangan = '' THEN
+                    IF v_input_time BETWEEN v_jadwal.jam_masuk AND v_jadwal.jam_masuk_selesai THEN
+                        NEW.keterangan := 'Masuk';
+                    ELSIF v_input_time > v_jadwal.jam_masuk_selesai AND v_input_time < v_jadwal.jam_pulang THEN
+                        NEW.keterangan := 'Terlambat';
+                    ELSIF v_input_time BETWEEN v_jadwal.jam_pulang AND (v_jadwal.jam_pulang + INTERVAL '1 hour') THEN
+                        NEW.keterangan := 'Pulang';
+                    ELSE
+                        RAISE EXCEPTION 'Waktu absensi di luar jam sekolah';
+                    END IF;
+                END IF;
 
-    -- 4. Cek duplikasi absensi reguler
-    IF NEW.keterangan IN ('Masuk', 'Terlambat', 'Pulang') THEN
-        -- Untuk absensi Masuk atau Terlambat
-        IF NEW.keterangan IN ('Masuk', 'Terlambat') THEN
-            SELECT * INTO v_existing_regular
-            FROM absensis
-            WHERE siswa_id = NEW.siswa_id
-            AND tanggal = NEW.tanggal::DATE
-            AND sekolah_id = NEW.sekolah_id
-            AND keterangan IN ('Masuk', 'Terlambat')
-            LIMIT 1;
+                -- 4. Cek duplikasi absensi reguler
+                IF NEW.keterangan IN ('Masuk', 'Terlambat', 'Pulang') THEN
+                    -- Untuk absensi Masuk atau Terlambat
+                    IF NEW.keterangan IN ('Masuk', 'Terlambat') THEN
+                        SELECT * INTO v_existing_regular
+                        FROM absensis
+                        WHERE siswa_id = NEW.siswa_id
+                        AND tanggal = NEW.tanggal::DATE
+                        AND sekolah_id = NEW.sekolah_id
+                        AND keterangan IN ('Masuk', 'Terlambat')
+                        LIMIT 1;
 
-            IF FOUND THEN
-                RAISE EXCEPTION 'Sudah ada absensi % pada tanggal ini', v_existing_regular.keterangan;
-            END IF;
-        END IF;
+                        IF FOUND THEN
+                            RAISE EXCEPTION 'Sudah ada absensi % pada tanggal ini', v_existing_regular.keterangan;
+                        END IF;
+                    END IF;
 
-        -- Untuk absensi Pulang
-        IF NEW.keterangan = 'Pulang' THEN
-            SELECT * INTO v_existing_regular
-            FROM absensis
-            WHERE siswa_id = NEW.siswa_id
-            AND tanggal = NEW.tanggal::DATE
-            AND sekolah_id = NEW.sekolah_id
-            AND keterangan = 'Pulang'
-            LIMIT 1;
+                    -- Untuk absensi Pulang
+                    IF NEW.keterangan = 'Pulang' THEN
+                        SELECT * INTO v_existing_regular
+                        FROM absensis
+                        WHERE siswa_id = NEW.siswa_id
+                        AND tanggal = NEW.tanggal::DATE
+                        AND sekolah_id = NEW.sekolah_id
+                        AND keterangan = 'Pulang'
+                        LIMIT 1;
 
-            IF FOUND THEN
-                RAISE EXCEPTION 'Sudah ada absensi pulang pada tanggal ini';
-            END IF;
-        END IF;
-    END IF;
+                        IF FOUND THEN
+                            RAISE EXCEPTION 'Sudah ada absensi pulang pada tanggal ini';
+                        END IF;
+                    END IF;
+                END IF;
 
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
 
--- Recreate trigger
-DROP TRIGGER IF EXISTS check_absensi_before_insert ON absensis;
-CREATE TRIGGER check_absensi_before_insert
-    BEFORE INSERT ON absensis
-    FOR EACH ROW
-    EXECUTE FUNCTION check_absensi_before_insert();
+            -- Recreate trigger
+            DROP TRIGGER IF EXISTS check_absensi_before_insert ON absensis;
+            CREATE TRIGGER check_absensi_before_insert
+                BEFORE INSERT ON absensis
+                FOR EACH ROW
+                EXECUTE FUNCTION check_absensi_before_insert();
         ";
     }
 };

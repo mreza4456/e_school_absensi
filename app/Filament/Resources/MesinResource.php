@@ -9,6 +9,10 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -47,31 +51,31 @@ class MesinResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Detail Mesin')
-                ->description('Masukan data mesin')
-                ->schema([
-                    Forms\Components\Select::make('vendor_id')
-                        ->required()
-                        ->relationship(name: 'vendor', titleAttribute: 'nama')
-                        ->hidden(fn () => !$user->hasRole('super_admin'))
-                        ->searchable()
-                        ->preload(),
-                    Forms\Components\Select::make('sekolah_id')
-                        ->nullable()
-                        ->relationship(name: 'sekolah', titleAttribute: 'nama')
-                        ->hidden(fn () => !$user->hasRole('super_admin'))
-                        ->searchable()
-                        ->preload(),
-                    Forms\Components\TextInput::make('kode_mesin')
-                        ->required()
-                        ->unique(Mesin::class, 'kode_mesin', ignoreRecord: true)
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('idle')
-                        ->nullable()
-                        ->hidden(fn () => Auth::user()->vendor_id !== null)
-                        ->numeric()
-                        ->default(15),
-                    Forms\Components\DatePicker::make('tgl_pembuatan')
-                        ->default(Carbon::now()),
+                    ->description('Masukan data mesin')
+                    ->schema([
+                        Forms\Components\Select::make('vendor_id')
+                            ->required()
+                            ->relationship(name: 'vendor', titleAttribute: 'nama')
+                            ->hidden(fn() => !$user->hasRole('super_admin'))
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('sekolah_id')
+                            ->nullable()
+                            ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                            ->hidden(fn() => !$user->hasRole('super_admin'))
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\TextInput::make('kode_mesin')
+                            ->required()
+                            ->unique(Mesin::class, 'kode_mesin', ignoreRecord: true)
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('idle')
+                            ->nullable()
+                            ->hidden(fn() => Auth::user()->vendor_id !== null)
+                            ->numeric()
+                            ->default(15),
+                        Forms\Components\DatePicker::make('tgl_pembuatan')
+                            ->default(Carbon::now()),
                     ])->columns(2),
                 Forms\Components\Toggle::make('status')
                     ->required(),
@@ -91,8 +95,8 @@ class MesinResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('vendor.nama')
                     ->label('Vendor')
-                    ->url(fn ($record) => route('filament.admin.resources.vendors.view', ['record' => $record->vendor_id]))
-                    ->hidden(fn () => !$user->hasRole('super_admin'))
+                    ->url(fn($record) => route('filament.admin.resources.vendors.view', ['record' => $record->vendor_id]))
+                    ->hidden(fn() => !$user->hasRole('super_admin'))
                     ->icon('heroicon-m-building-office')
                     ->color('primary')
                     ->badge()
@@ -102,14 +106,14 @@ class MesinResource extends Resource
 
                 Tables\Columns\TextColumn::make('sekolah.nama')
                     ->label('Sekolah')
-                    ->url(fn ($record) => $record->sekolah_id ? route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]) : null)
-                    ->hidden(fn () => !$user->hasRole('super_admin'))
+                    ->url(fn($record) => $record->sekolah_id ? route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]) : null)
+                    ->hidden(fn() => !$user->hasRole('super_admin'))
                     ->icon('heroicon-m-building-library')
                     ->color('success')
                     ->badge()
                     ->searchable()
                     ->sortable()
-                    ->tooltip(fn ($record) => $record->sekolah_id ? 'Klik untuk lihat detail sekolah' : null),
+                    ->tooltip(fn($record) => $record->sekolah_id ? 'Klik untuk lihat detail sekolah' : null),
 
                 Tables\Columns\TextColumn::make('kode_mesin')
                     ->label('Kode Mesin')
@@ -121,14 +125,14 @@ class MesinResource extends Resource
 
                 Tables\Columns\TextColumn::make('idle')
                     ->label('Idle')
-                    ->hidden(fn () => $user->hasRole('vendor'))
+                    ->hidden(fn() => $user->hasRole('vendor'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('wifi.ssid')
                     ->label('Wifi')
-                    ->url(fn ($record) => route('filament.admin.resources.wifis.view', ['record' => $record->wifi->id]))
+                    ->url(fn($record) => route('filament.admin.resources.wifis.view', ['record' => $record->wifi->id]))
                     ->color('primary')
-                    ->hidden(fn () => $user->hasRole('vendor'))
+                    ->hidden(fn() => $user->hasRole('vendor'))
                     ->badge()
                     ->icon('heroicon-m-wifi'),
 
@@ -139,7 +143,7 @@ class MesinResource extends Resource
 
                 Tables\Columns\TextColumn::make('keterangan')
                     ->label('Keterangan')
-                    ->color(fn ($record): string => match ($record->keterangan) {
+                    ->color(fn($record): string => match ($record->keterangan) {
                         'Sudah Aktif' => 'success',
                         'Belum Diset' => 'primary',
                         'Tidak Aktif' => 'danger',
@@ -148,7 +152,7 @@ class MesinResource extends Resource
                     ->badge()
                     ->sortable()
                     ->searchable()
-                    ->hidden(fn () => $user->hasRole('vendor')),
+                    ->hidden(fn() => $user->hasRole('vendor')),
 
                 Tables\Columns\IconColumn::make('status')
                     ->label('Status')
@@ -158,7 +162,7 @@ class MesinResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->hidden(fn () => $user->hasRole('vendor')),
+                    ->hidden(fn() => $user->hasRole('vendor')),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
@@ -199,7 +203,7 @@ class MesinResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn () => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
+                    ->hidden(fn() => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
 
                 SelectFilter::make('sekolah')
                     ->relationship('sekolah', 'nama')
@@ -207,7 +211,7 @@ class MesinResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn () => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
+                    ->hidden(fn() => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
 
                 // Date Range Filters
                 Filter::make('tgl_pembuatan')
@@ -221,11 +225,11 @@ class MesinResource extends Resource
                         return $query
                             ->when(
                                 $data['dari_tanggal'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tgl_pembuatan', '>=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('tgl_pembuatan', '>=', $date)
                             )
                             ->when(
                                 $data['sampai_tanggal'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tgl_pembuatan', '<=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('tgl_pembuatan', '<=', $date)
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -255,7 +259,7 @@ class MesinResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['kode_mesin'],
-                            fn (Builder $query, $value): Builder => $query->where('kode_mesin', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('kode_mesin', 'like', "%{$value}%")
                         );
                     }),
 
@@ -271,11 +275,11 @@ class MesinResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -307,6 +311,102 @@ class MesinResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                // Machine Details Section
+                Section::make('Detail Mesin')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('kode_mesin')
+                                    ->label('Kode Mesin')
+                                    ->icon('heroicon-m-cpu-chip')
+                                    ->badge()
+                                    ->color('primary')
+                                    ->weight('bold')
+                                    ->size('xl'),
+
+                                TextEntry::make('status')
+                                    ->label('Status')
+                                    ->badge()
+                                    ->color(fn($state) => $state ? 'success' : 'danger')
+                                    ->formatStateUsing(fn($state) => $state ? 'Aktif' : 'Tidak Aktif'),
+                            ]),
+                        TextEntry::make('keterangan')
+                            ->label('Keterangan')
+                            ->icon('heroicon-m-information-circle'),
+                    ]),
+
+                // Vendor and School Section
+                Section::make('Relasi Mesin')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('vendor.nama')
+                                    ->label('Vendor')
+                                    ->icon('heroicon-m-building-office')
+                                    ->url(function ($record) {
+                                        return $record->vendor_id
+                                            ? route('filament.admin.resources.vendors.view', ['record' => $record->vendor_id])
+                                            : null;
+                                    })
+                                    ->color('primary'),
+
+                                TextEntry::make('sekolah.nama')
+                                    ->label('Sekolah')
+                                    ->icon('heroicon-m-building-library')
+                                    ->url(function ($record) {
+                                        return $record->sekolah_id
+                                            ? route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id])
+                                            : null;
+                                    })
+                                    ->color('info'),
+                            ]),
+                    ]),
+
+                // WiFi Section
+                Section::make('Informasi WiFi')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('wifi.ssid')
+                                    ->label('SSID WiFi')
+                                    ->icon('heroicon-m-wifi'),
+                                TextEntry::make('wifi.password')
+                                    ->label('Password WiFi')
+                                    ->icon('heroicon-m-key'),
+                            ]),
+                    ]),
+
+                // Additional Information Section
+                Section::make('Informasi Tambahan')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('idle')
+                                    ->label('Waktu Idle (Detik)')
+                                    ->icon('heroicon-m-clock')
+                                    ->state(fn($record) => $record->idle ?? 'Default: 15'),
+
+                                TextEntry::make('tgl_pembuatan')
+                                    ->label('Tanggal Pembuatan')
+                                    ->dateTime(),
+
+                                TextEntry::make('created_at')
+                                    ->label('Dibuat Pada')
+                                    ->dateTime(),
+
+                                TextEntry::make('updated_at')
+                                    ->label('Terakhir Diubah')
+                                    ->dateTime(),
+                            ]),
+                    ]),
+            ]);
+    }
+
+
     public static function getRelations(): array
     {
         return [
@@ -334,8 +434,7 @@ class MesinResource extends Resource
             if ($user && $user->hasRole('vendor')) {
                 // If user is 'vendor', filter by their sekolah_id
                 $query->where('vendor_id', $user->vendor_id);
-            }
-            elseif ($user && $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah')) {
+            } elseif ($user && $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah')) {
                 // If user is 'admin' or 'sekolah', filter by their sekolah_id
                 $query->where('sekolah_id', $user->sekolah_id);
             }

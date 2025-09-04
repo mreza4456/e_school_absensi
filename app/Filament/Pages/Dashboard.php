@@ -12,12 +12,12 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
-    public function filtersForm(Form $form): Form
-    {
-        return $form
-            ->schema([
-                DatePicker::make('startDate'),
-                DatePicker::make('endDate'),
-            ]);
-    }
+    // public function filtersForm(Form $form): Form
+    // {
+    //     return $form
+    //         ->schema([
+    //             DatePicker::make('startDate'),
+    //             DatePicker::make('endDate'),
+    //         ]);
+    // }
 }

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 class AdminStaffSekolahAbsensiChart extends ChartWidget
 {
     use HasWidgetShield;
+    
     use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Absensi';

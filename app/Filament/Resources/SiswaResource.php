@@ -10,6 +10,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
@@ -44,83 +49,83 @@ class SiswaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Data Siswa')
-                ->description('Masukan data siswa')
-                ->schema([
-                    Forms\Components\Select::make('sekolah_id')
-                        ->label('Sekolah')
-                        ->required()
-                        ->relationship(name: 'sekolah', titleAttribute: 'nama')
-                        ->searchable()
-                        ->default(fn () => Auth::user()->sekolah_id ?? null)
-                        ->hidden(fn () => Auth::user()->sekolah_id !== null)
-                        ->preload()
-                        ->afterStateUpdated(function (callable $set) {
-                            $set('kelas', null);
-                        }),
-                    Forms\Components\TextInput::make('nis')
-                        ->label('NIS')
-                        ->required()
-                        ->unique(Siswa::class, 'nis', ignoreRecord: true)
-                        ->numeric(),
-                    Forms\Components\TextInput::make('nama')
-                        ->label('Nama Lengkap')
-                        ->required()
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('panggilan')
-                        ->label('Nama Panggilan')
-                        ->required()
-                        ->maxLength(255),
-                    Forms\Components\Repeater::make('uidType')
-                        ->relationship()
-                        ->label('UID')
-                        ->schema([
-                            Forms\Components\Select::make('type')
-                                ->label('Tipe')
-                                ->options([
-                                    'rfid' => 'RFID',
-                                    'fingerprint' => 'Fingerprint',
-                                    'retina' => 'Retina',
-                                    'face_id' => 'Face ID',
-                                ])
-                                ->native(false)
-                                ->required(),
+                    ->description('Masukan data siswa')
+                    ->schema([
+                        Forms\Components\Select::make('sekolah_id')
+                            ->label('Sekolah')
+                            ->required()
+                            ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                            ->searchable()
+                            ->default(fn() => Auth::user()->sekolah_id ?? null)
+                            ->hidden(fn() => Auth::user()->sekolah_id !== null)
+                            ->preload()
+                            ->afterStateUpdated(function (callable $set) {
+                                $set('kelas', null);
+                            }),
+                        Forms\Components\TextInput::make('nis')
+                            ->label('NIS')
+                            ->required()
+                            ->unique(Siswa::class, 'nis', ignoreRecord: true)
+                            ->numeric(),
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Lengkap')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('panggilan')
+                            ->label('Nama Panggilan')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Repeater::make('uidType')
+                            ->relationship()
+                            ->label('Kode Absensi')
+                            ->schema([
+                                Forms\Components\Select::make('type')
+                                    ->label('Tipe')
+                                    ->options([
+                                        'rfid' => 'RFID',
+                                        'fingerprint' => 'Fingerprint',
+                                        'retina' => 'Retina',
+                                        'face_id' => 'Face ID',
+                                    ])
+                                    ->native(false)
+                                    ->required(),
                                 Forms\Components\TextInput::make('value')
                                     ->label('Kode Absensi')
                                     ->password() // Mengatur input sebagai password
                                     ->revealable(),
-                        ])
-                        ->default([
-                            ['type' => 'rfid', 'value' => null],
-                            ['type' => 'fingerprint', 'value' => null],
-                            ['type' => 'retina', 'value' => null],
-                            ['type' => 'face_id', 'value' => null],
-                        ])
-                        // ->addable($user->hasRole('super_admin'))
-                        ->columnSpanFull(),
-                ])
-                ->columns(2), // Optional: Set columns to 2 for better layout in this section
+                            ])
+                            ->default([
+                                ['type' => 'rfid', 'value' => null],
+                                ['type' => 'fingerprint', 'value' => null],
+                                ['type' => 'retina', 'value' => null],
+                                ['type' => 'face_id', 'value' => null],
+                            ])
+                            // ->addable($user->hasRole('super_admin'))
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2), // Optional: Set columns to 2 for better layout in this section
 
                 Forms\Components\Section::make('Data Kelas & Lainnya')
-                ->description('Masukan data kelas siswa')
-                ->schema([
-                    Forms\Components\Select::make('kelas_id')
-                        ->label('Kelas')
-                        ->required()
-                        ->options(fn (Forms\Get $get): Collection => Kelas::query()->where('sekolah_id', $get('sekolah_id'))->get()->pluck('nama_kelas', 'id'))
-                        ->searchable()
-                        ->preload(),
-                    Forms\Components\Select::make('jk')
-                        ->label('Jenis Kelamin')
-                        ->required()
-                        ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])
-                        ->native(false),
-                    Forms\Components\TextInput::make('telp_ortu')
-                        ->label('Telepon Orang Tua')
-                        ->tel()
-                        ->required()
-                        ->maxLength(255),
-                        ])
-                        ->columns(2),
+                    ->description('Masukan data kelas siswa')
+                    ->schema([
+                        Forms\Components\Select::make('kelas_id')
+                            ->label('Kelas')
+                            ->required()
+                            ->options(fn(Forms\Get $get): Collection => Kelas::query()->where('sekolah_id', $get('sekolah_id'))->get()->pluck('nama_kelas', 'id'))
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\Select::make('jk')
+                            ->label('Jenis Kelamin')
+                            ->required()
+                            ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])
+                            ->native(false),
+                        Forms\Components\TextInput::make('telp_ortu')
+                            ->label('Telepon Orang Tua')
+                            ->tel()
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
                 Forms\Components\Toggle::make('status')
                     ->label('Status')
                     ->required(),
@@ -136,8 +141,8 @@ class SiswaResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('sekolah.nama')
-                    ->url(fn ($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
-                    ->hidden(fn () => Auth::user()->sekolah_id != null)
+                    ->url(fn($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
+                    ->hidden(fn() => Auth::user()->sekolah_id != null)
                     ->icon('heroicon-m-building-library')
                     ->color('primary')
                     ->badge()
@@ -178,8 +183,8 @@ class SiswaResource extends Resource
                 Tables\Columns\TextColumn::make('jk')
                     ->label('Jenis Kelamin')
                     ->searchable()
-                    ->formatStateUsing(fn ($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan')
-                    ->color(fn ($record) => $record->jk === 'L' ? 'info' : 'danger')
+                    ->formatStateUsing(fn($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan')
+                    ->color(fn($record) => $record->jk === 'L' ? 'info' : 'danger')
                     ->badge(),
 
                 Tables\Columns\TextColumn::make('telp_ortu')
@@ -224,7 +229,7 @@ class SiswaResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort(fn () => Auth::user()->sekolah_id ? 'nama' : 'sekolah.nama')
+            ->defaultSort(fn() => Auth::user()->sekolah_id ? 'nama' : 'sekolah.nama')
             ->filters([
                 // Basic Status Filters
                 Tables\Filters\TrashedFilter::make()
@@ -248,7 +253,7 @@ class SiswaResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['nis'],
-                            fn (Builder $query, $value): Builder => $query->where('nis', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('nis', 'like', "%{$value}%")
                         );
                     }),
 
@@ -261,7 +266,7 @@ class SiswaResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['nama'],
-                            fn (Builder $query, $value): Builder => $query->where('nama', 'like', "%{$value}%")
+                            fn(Builder $query, $value): Builder => $query->where('nama', 'like', "%{$value}%")
                         );
                     }),
 
@@ -284,7 +289,7 @@ class SiswaResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn () => Auth::user()->sekolah_id != null),
+                    ->hidden(fn() => Auth::user()->sekolah_id != null),
 
                 // Demographic Filters
                 SelectFilter::make('jk')
@@ -307,11 +312,11 @@ class SiswaResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -337,6 +342,202 @@ class SiswaResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Informasi Siswa')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('sekolah.nama')
+                                    ->label('Sekolah')
+                                    ->icon('heroicon-m-building-library')
+                                    ->color('primary')
+                                    ->badge()
+                                    ->url(fn($record) => route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]))
+                                    ->hidden(fn() => Auth::user()->sekolah_id != null),
+
+                                TextEntry::make('nis')
+                                    ->label('NIS'),
+                            ]),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('nama')
+                                    ->label('Nama Lengkap'),
+
+                                TextEntry::make('panggilan')
+                                    ->label('Nama Panggilan'),
+                            ]),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('kelas.nama_kelas')
+                                    ->label('Kelas')
+                                    ->icon('heroicon-m-user-group')
+                                    ->color('primary')
+                                    ->badge()
+                                    ->url(function ($record) {
+                                        $kelas = Kelas::query()
+                                            ->where('nama_kelas', $record->kelas)
+                                            ->where('sekolah_id', $record->sekolah_id)
+                                            ->first();
+
+                                        return $kelas
+                                            ? route('filament.admin.resources.kelas.view', ['record' => $kelas->id])
+                                            : null;
+                                    }),
+
+                                TextEntry::make('jk')
+                                    ->label('Jenis Kelamin')
+                                    ->formatStateUsing(fn($state) => $state === 'L' ? 'Laki-laki' : 'Perempuan')
+                                    ->color(fn($record) => $record->jk === 'L' ? 'info' : 'danger')
+                                    ->badge(),
+                            ]),
+
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('telp_ortu')
+                                    ->label('Telepon Orang Tua')
+                                    ->icon('heroicon-m-phone')
+                                    ->color('primary')
+                                    ->url(function ($record) {
+                                        $phone = $record->telp_ortu;
+                                        $phone = preg_replace('/[^0-9]/', '', $phone);
+                                        $phone = Str::startsWith($phone, '0') ? Str::substr($phone, 1) : $phone;
+                                        $phone = '62' . $phone;
+                                        return 'https://wa.me/' . $phone;
+                                    })
+                                    ->openUrlInNewTab(),
+
+                                IconEntry::make('status')
+                                    ->label('Status Aktif')
+                                    ->boolean(),
+                            ]),
+
+                        Section::make('Informasi Tambahan')
+                            ->schema([
+                                Grid::make(3)
+                                    ->schema([
+                                        TextEntry::make('created_at')
+                                            ->label('Dibuat Pada')
+                                            ->dateTime(),
+
+                                        TextEntry::make('updated_at')
+                                            ->label('Terakhir Diubah')
+                                            ->dateTime(),
+
+                                        TextEntry::make('deleted_at')
+                                            ->label('Dihapus Pada')
+                                            ->dateTime(),
+                                    ]),
+                            ]),
+                    ]),
+                Section::make('Informasi Absensi')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                // Hitung jumlah keterlambatan
+                                TextEntry::make('total_terlambat')
+                                    ->label('Total Keterlambatan')
+                                    ->state(function ($record) {
+                                        return $record->absensi()
+                                            ->where('keterangan', 'Terlambat')
+                                            ->count();
+                                    })
+                                    ->color('danger')
+                                    ->badge(),
+
+                                // Tampilkan status keaktifan
+                                TextEntry::make('status')
+                                    ->label('Status Siswa')
+                                    ->badge()
+                                    ->color(fn($state) => $state ? 'success' : 'danger')
+                                    ->formatStateUsing(fn($state) => $state ? 'Aktif' : 'Tidak Aktif'),
+                            ]),
+
+                        // Rincian Absensi Terakhir
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('last_absensi_date')
+                                    ->label('Absensi Terakhir')
+                                    ->state(function ($record) {
+                                        $lastAbsensi = $record->absensi()
+                                            ->latest('tanggal')
+                                            ->first();
+
+                                        return $lastAbsensi
+                                            ? \Carbon\Carbon::parse($lastAbsensi->tanggal)->format('d M Y')
+                                            : 'Belum Ada Absensi';
+                                    }),
+
+                                TextEntry::make('last_absensi_status')
+                                    ->label('Status Terakhir')
+                                    ->state(function ($record) {
+                                        $lastAbsensi = $record->absensi()
+                                            ->latest('tanggal')
+                                            ->first();
+
+                                        return $lastAbsensi
+                                            ? $lastAbsensi->keterangan
+                                            : 'Tidak Ada';
+                                    })
+                                    ->color(fn($state) => match ($state) {
+                                        'Masuk' => 'success',
+                                        'Terlambat' => 'warning',
+                                        'Izin' => 'info',
+                                        'Sakit' => 'primary',
+                                        'Alpa' => 'danger',
+                                        default => 'gray'
+                                    })
+                                    ->badge(),
+                            ]),
+
+                        // Ringkasan Absensi
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('total_absensi')
+                                    ->label('Total Absensi')
+                                    ->state(function ($record) {
+                                        return $record->absensi()->count();
+                                    }),
+
+                                TextEntry::make('hadir')
+                                    ->label('Hadir')
+                                    ->state(function ($record) {
+                                        return $record->absensi()
+                                            ->where('keterangan', 'Masuk')
+                                            ->count();
+                                    })
+                                    ->color('success')
+                                    ->badge(),
+
+                                TextEntry::make('absensi_breakdown')
+                                    ->label('Rincian Status Kehadiran')
+                                    ->color('gray')
+                                    ->badge()
+                                    ->separator(', ')
+                                    ->state(function ($record) {
+                                        $statuses = $record->absensi()
+                                            ->selectRaw('keterangan, COUNT(*) as count')
+                                            ->groupBy('keterangan')
+                                            ->pluck('count', 'keterangan')
+                                            ->toArray();
+
+                                        return collect($statuses)
+                                            ->map(fn($count, $status) => "{$status}: {$count}")
+                                            ->implode(', ');
+                                    })
+                                    ->extraAttributes([
+                                        'class' => 'text-sm font-medium tracking-wider'
+                                    ])
+                                    ->icon('heroicon-m-chart-pie')
+                            ]),
+                    ]),
             ]);
     }
 
@@ -381,7 +582,7 @@ class SiswaResource extends Resource
     {
         $user = Auth::user();
         assert($user instanceof User);
-        return $user->hasRole('super_admin') || $user->hasRole('staff') ? ['nama', 'sekolah.nama', 'kelas.nama_kelas', 'nis', 'uid'] : ['nama', 'kelas.nama_kelas', 'nis', 'uid'];
+        return $user->hasRole('super_admin') || $user->hasRole('staff') ? ['nama', 'sekolah.nama', 'kelas.nama_kelas', 'nis', 'uidType.value'] : ['nama', 'kelas.nama_kelas', 'nis', 'uidType.value'];
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string|Htmlable
