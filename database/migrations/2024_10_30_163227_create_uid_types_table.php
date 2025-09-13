@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('uid_types', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('siswa_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('members_id')->constrained()->cascadeOnDelete();
             $table->string('type');
             $table->text('value')->nullable();
             $table->timestamps();

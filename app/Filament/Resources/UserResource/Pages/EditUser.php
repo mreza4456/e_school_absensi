@@ -28,12 +28,12 @@ class EditUser extends EditRecord
         $data['roles'] = $roles;
 
         if (!$user->hasRole('super_admin')) {
-            if ($user-> hasRole('admin_sekolah') && $user->sekolah_id) {
-                $data['sekolah_id'] = $user->sekolah_id;
+            if ($user-> hasRole('admin_organization') && $user->organization_id) {
+                $data['organization_id'] = $user->organization_id;
                 $data['vendor_id'] = null;
             } elseif ($user->vendor_id) {
                 $data['vendor_id'] = $user->vendor_id;
-                $data['sekolah_id'] = null;
+                $data['organization_id'] = null;
             }
         }
 
@@ -59,12 +59,12 @@ class EditUser extends EditRecord
 
         // Handle organization assignment
         if (!$user->hasRole('super_admin')) {
-            if ($user->hasRole('admin_sekolah') && $user->sekolah_id) {
-                $data['sekolah_id'] = $user->sekolah_id;
+            if ($user->hasRole('admin_organization') && $user->organization_id) {
+                $data['organization_id'] = $user->organization_id;
                 $data['vendor_id'] = null;
             } elseif ($user->vendor_id) {
                 $data['vendor_id'] = $user->vendor_id;
-                $data['sekolah_id'] = null;
+                $data['organization_id'] = null;
             }
         }
 

@@ -19,8 +19,8 @@ class ProvinsiResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-asia-australia';
 
-    protected static ?string $navigationGroup = 'Lokasi';
-
+    protected static ?string $navigationGroup = 'Location';
+ protected static ?string $navigationLabel = 'Province';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form

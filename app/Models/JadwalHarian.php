@@ -12,8 +12,8 @@ class JadwalHarian extends Model
 
     protected $guarded = ['id'];
 
-    public function sekolah(): BelongsTo
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Sekolah::class);
+        return $this->belongsTo(Organization::class);
     }
 }

@@ -12,10 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('siswas', function (Blueprint $table) {
+        Schema::create('members', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('sekolah_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('kelas_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('groups_id')->constrained()->cascadeOnDelete();
             $table->bigInteger('nis')->unique();
             $table->string('nama');
             $table->string('panggilan');

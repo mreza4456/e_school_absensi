@@ -35,7 +35,7 @@ class VendorResource extends Resource
 
     protected static ?string $navigationGroup = 'Vendor';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
     {

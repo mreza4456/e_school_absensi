@@ -13,11 +13,11 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class SuperAdminStaffMesinTable extends BaseWidget
+class SuperAdminStaffMachinesTable extends BaseWidget
 {
     use HasWidgetShield;
 
-    protected static ?string $heading = 'Mesin yang perlu Diset';
+    protected static ?string $heading = 'Machines need to be set';
 
     protected static ?int $sort = 6;
 
@@ -27,7 +27,9 @@ class SuperAdminStaffMesinTable extends BaseWidget
     {
         return $table
             ->query(
-                Mesin::query()->with(['sekolah', 'vendor'])->where('keterangan', 'Belum Diset')
+                Mesin::query()
+                    ->with(['organization', 'vendor'])
+                    ->where('keterangan', 'Belum Diset')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('kode_mesin')
@@ -36,7 +38,8 @@ class SuperAdminStaffMesinTable extends BaseWidget
                     ->color('primary')
                     ->badge()
                     ->sortable()
-                    ->tooltip('Klik untuk melihat detail mesin'),
+                    ->tooltip('Click to view machine details'),
+
                 TextColumn::make('vendor.nama')
                     ->label('Vendor')
                     ->url(fn ($record) => route('filament.admin.resources.vendors.view', ['record' => $record->vendor_id]))
@@ -45,13 +48,13 @@ class SuperAdminStaffMesinTable extends BaseWidget
                     ->badge()
                     ->searchable()
                     ->sortable()
-                    ->tooltip('Klik untuk lihat detail vendor'),
+                    ->tooltip('Click to view vendor details'),
 
-                TextColumn::make('sekolah.nama')
-                    ->label('Sekolah'),
+                TextColumn::make('organization.nama')
+                    ->label('Organization'),
 
                 TextColumn::make('keterangan')
-                    ->label('Keterangan')
+                    ->label('Activation Status')
                     ->color(fn ($record): string => match ($record->keterangan) {
                         'Sudah Aktif' => 'success',
                         'Belum Diset' => 'primary',
@@ -63,39 +66,40 @@ class SuperAdminStaffMesinTable extends BaseWidget
                     ->searchable(),
 
                 IconColumn::make('status')
-                    ->boolean(),
+                    ->boolean()
+                    ->label('Machine Status'),
             ])
             ->filters([
                 SelectFilter::make('vendor')
                     ->relationship('vendor', 'nama')
                     ->label('Vendor')
-                    ->placeholder('Semua Vendor')
+                    ->placeholder('All Vendors')
                     ->searchable()
                     ->preload(),
 
-                SelectFilter::make('sekolah')
-                    ->relationship('sekolah', 'nama')
-                    ->label('Sekolah')
-                    ->placeholder('Semua Sekolah')
+                SelectFilter::make('organization')
+                    ->relationship('organization', 'nama')
+                    ->label('Organization')
+                    ->placeholder('All Organizations')
                     ->searchable()
                     ->preload(),
 
                 SelectFilter::make('keterangan')
                     ->options([
-                        'Sudah Aktif' => 'Sudah Aktif',
-                        'Belum Diset' => 'Belum Diset',
-                        'Tidak Aktif' => 'Tidak Aktif',
+                        'Sudah Aktif' => 'Active',
+                        'Belum Diset' => 'Not Set',
+                        'Tidak Aktif' => 'Inactive',
                     ])
-                    ->label('Status Aktivasi')
+                    ->label('Activation Status')
                     ->native(false)
-                    ->placeholder('Semua Status'),
+                    ->placeholder('All Status'),
 
                 TernaryFilter::make('status')
-                    ->label('Status Mesin')
-                    ->placeholder('Semua Status')
-                    ->trueLabel('Aktif')
-                    ->native(false)
-                    ->falseLabel('Tidak Aktif'),
+                    ->label('Machine Status')
+                    ->placeholder('All Status')
+                    ->trueLabel('Active')
+                    ->falseLabel('Inactive')
+                    ->native(false),
             ], layout: FiltersLayout::Dropdown);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\AbsensiResource\Pages;
 
 use App\Filament\Resources\AbsensiResource;
 use App\Models\Absensi;
-use App\Models\Sekolah;
+use App\Models\Organization;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Actions;
@@ -15,56 +15,62 @@ use Filament\Notifications\Notification;
 class CreateAbsensi extends CreateRecord
 {
     protected static string $resource = AbsensiResource::class;
+    public function getTitle(): string
+{
+    return __('Create Attendance');
+}
+
+ 
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        unset($data['kelas_filter']);
+        unset($data['groups_filter']);
         // dd($data);
         try {
             $user = Auth::user();
             assert($user instanceof User);
 
             if (!$user->hasRole('super_admin')) {
-                if ($user->hasRole('admin_sekolah') || ($user->hasRole('staff_sekolah') && $user->sekolah_id)) {
-                    $data['sekolah_id'] = $user->sekolah_id;
+                if ($user->hasRole('admin_organization') || ($user->hasRole('staff_organization') && $user->organization_id)) {
+                    $data['organization_id'] = $user->organization_id;
                 }
             }
 
             // Daftar keterangan khusus yang tidak memperbolehkan absensi lain
-            $specialAttendanceTypes = ['Izin', 'Sakit', 'Alpa'];
+            $specialAttendanceTypes = ['Permit', 'Sick', 'Alpha'];
 
             // Cek apakah siswa sudah memiliki absensi khusus di tanggal yang sama
-            $existingSpecialAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
+            $existingSpecialAbsensi = Absensi::where('members_id', $data['members_id'])
                 ->where('tanggal', $data['tanggal'])
-                ->where('sekolah_id', $data['sekolah_id'])
+                ->where('organization_id', $data['organization_id'])
                 ->whereIn('keterangan', $specialAttendanceTypes)
                 ->first();
 
             // Jika sudah ada absensi khusus
             if ($existingSpecialAbsensi) {
-                throw new \Exception("Siswa sudah tercatat {$existingSpecialAbsensi->keterangan} pada tanggal ini.");
+                throw new \Exception("Members Already Register {$existingSpecialAbsensi->keterangan} pada tanggal ini.");
             }
 
             // Jika keterangan adalah salah satu tipe khusus, cek duplikasi
             if (in_array($data['keterangan'], $specialAttendanceTypes)) {
-                $existingAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
+                $existingAbsensi = Absensi::where('members_id', $data['members_id'])
                     ->where('tanggal', $data['tanggal'])
-                    ->where('sekolah_id', $data['sekolah_id'])
+                    ->where('organization_id', $data['organization_id'])
                     ->where('keterangan', $data['keterangan'])
                     ->first();
 
                 if ($existingAbsensi) {
-                    throw new \Exception("Absensi {$data['keterangan']} sudah ada untuk tanggal ini.");
+                    throw new \Exception("Attendance {$data['keterangan']} Already Exist On This Date.");
                 }
             }
 
             // Jika keterangan tidak otomatis, maka lakukan pengecekan seperti sebelumnya
             if (empty($data['keterangan'])) {
                 // Get the school's schedule for the given date
-                $sekolah = Sekolah::findOrFail($data['sekolah_id']);
+                $organization = Organization::findOrFail($data['organization_id']);
 
                 // Get the timezone for the school
-                $schoolTimezone = $this->getSchoolTimezone($sekolah);
+                $schoolTimezone = $this->getSchoolTimezone($organization);
 
                 // Convert input date and time to school's timezone
                 $inputDateTime = Carbon::parse($data['tanggal'] . ' ' . $data['waktu'], $schoolTimezone);
@@ -73,7 +79,7 @@ class CreateAbsensi extends CreateRecord
                 $dayOfWeek = $inputDateTime->locale('id')->dayName;
 
                 // Get school schedule
-                $jadwal = $sekolah->jadwalHarian()->where('hari', $dayOfWeek)->firstOrFail();
+                $jadwal = $organization->jadwalHarian()->where('hari', $dayOfWeek)->firstOrFail();
 
                 // Convert schedule times to Carbon instances for the same day in school's timezone
                 $jamMasuk = Carbon::parse($inputDateTime->format('Y-m-d') . ' ' . $jadwal->jam_masuk, $schoolTimezone);
@@ -83,27 +89,27 @@ class CreateAbsensi extends CreateRecord
 
                 // Tentukan keterangan otomatis
                 if ($inputDateTime->between($jamMasuk, $jamMasukSelesai)) {
-                    $data['keterangan'] = 'Masuk';
+                    $data['keterangan'] = 'Present';
                 } elseif ($inputDateTime->gt($jamMasukSelesai) && $inputDateTime->lt($jamPulang)) {
-                    $data['keterangan'] = 'Terlambat';
+                    $data['keterangan'] = 'Late';
                 } elseif ($inputDateTime->between($jamPulang, $jamPulangSelesai)) {
-                    $data['keterangan'] = 'Pulang';
+                    $data['keterangan'] = 'Go Home';
                 } else {
-                    throw new \Exception('Waktu absensi di luar jam sekolah.');
+                    throw new \Exception('Absence time outside school hours');
                 }
             }
 
             // Check for existing attendance untuk keterangan Masuk dan Terlambat
-            $existingAbsensi = Absensi::where('siswa_id', $data['siswa_id'])
+            $existingAbsensi = Absensi::where('members_id', $data['members_id'])
                 ->where('tanggal', $data['tanggal'])
-                ->where('sekolah_id', $data['sekolah_id'])
+                ->where('organization_id', $data['organization_id'])
                 ->where(function ($query) use ($data) {
                     $query->where('keterangan', $data['keterangan'])
                         ->orWhere(function ($q) use ($data) {
-                            if ($data['keterangan'] === 'Masuk') {
-                                $q->where('keterangan', 'Terlambat');
-                            } elseif ($data['keterangan'] === 'Terlambat') {
-                                $q->where('keterangan', 'Masuk');
+                            if ($data['keterangan'] === 'Present') {
+                                $q->where('keterangan', 'Late');
+                            } elseif ($data['keterangan'] === 'Late') {
+                                $q->where('keterangan', 'Present');
                             }
                         });
                 })
@@ -111,9 +117,9 @@ class CreateAbsensi extends CreateRecord
 
             if ($existingAbsensi) {
                 if ($existingAbsensi->keterangan === $data['keterangan']) {
-                    throw new \Exception("Absensi {$data['keterangan']} sudah ada untuk tanggal ini.");
+                    throw new \Exception("Attendance {$data['keterangan']} Already Exist On This Date.");
                 } else {
-                    throw new \Exception("Sudah ada absensi {$existingAbsensi->keterangan} untuk tanggal ini.");
+                    throw new \Exception("Attendance Already Exist  {$existingAbsensi->keterangan} On This Date");
                 }
             }
 
@@ -136,11 +142,11 @@ class CreateAbsensi extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    private function getSchoolTimezone(Sekolah $sekolah): string
+    private function getSchoolTimezone(organization $organization): string
     {
-        // Assuming there's a 'timezone' field in the Sekolah model
+        // Assuming there's a 'timezone' field in the organization model
         // If not, you might need to determine this based on some other criteria
-        switch ($sekolah->timezone) {
+        switch ($organization->timezone) {
             case 'WIB':
                 return 'Asia/Jakarta';
             case 'WITA':

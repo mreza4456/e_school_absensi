@@ -32,14 +32,16 @@ class MesinResource extends Resource
 
     protected static ?string $navigationGroup = 'Vendor';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationLabel = 'Machine';
+
+    protected static ?int $navigationSort = 5;
 
     public static function getNavigationGroup(): ?string
     {
         $user = Auth::user();
 
         if ($user instanceof \App\Models\User) {
-            return $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah') ? 'Mesin' : 'Vendor';
+            return $user->hasRole('admin_organization') || $user->hasRole('staff_organization') ? 'Machine' : 'Vendor';
         }
     }
 
@@ -59,9 +61,9 @@ class MesinResource extends Resource
                             ->hidden(fn() => !$user->hasRole('super_admin'))
                             ->searchable()
                             ->preload(),
-                        Forms\Components\Select::make('sekolah_id')
+                        Forms\Components\Select::make('organization_id')
                             ->nullable()
-                            ->relationship(name: 'sekolah', titleAttribute: 'nama')
+                            ->relationship(name: 'organization', titleAttribute: 'nama')
                             ->hidden(fn() => !$user->hasRole('super_admin'))
                             ->searchable()
                             ->preload(),
@@ -104,16 +106,16 @@ class MesinResource extends Resource
                     ->sortable()
                     ->tooltip('Klik untuk lihat detail vendor'),
 
-                Tables\Columns\TextColumn::make('sekolah.nama')
-                    ->label('Sekolah')
-                    ->url(fn($record) => $record->sekolah_id ? route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id]) : null)
+                Tables\Columns\TextColumn::make('organization.nama')
+                    ->label('organization')
+                    ->url(fn($record) => $record->organization_id ? route('filament.admin.resources.organizations.view', ['record' => $record->organization_id]) : null)
                     ->hidden(fn() => !$user->hasRole('super_admin'))
                     ->icon('heroicon-m-building-library')
                     ->color('success')
                     ->badge()
                     ->searchable()
                     ->sortable()
-                    ->tooltip(fn($record) => $record->sekolah_id ? 'Klik untuk lihat detail sekolah' : null),
+                    ->tooltip(fn($record) => $record->organization_id ? 'Klik untuk lihat detail organization' : null),
 
                 Tables\Columns\TextColumn::make('kode_mesin')
                     ->label('Kode Mesin')
@@ -203,15 +205,15 @@ class MesinResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn() => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
+                    ->hidden(fn() => Auth::user()->organization_id != null || Auth::user()->vendor_id != null),
 
-                SelectFilter::make('sekolah')
-                    ->relationship('sekolah', 'nama')
-                    ->label('Sekolah')
+                SelectFilter::make('organization')
+                    ->relationship('organization', 'nama')
+                    ->label('organization')
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->hidden(fn() => Auth::user()->sekolah_id != null || Auth::user()->vendor_id != null),
+                    ->hidden(fn() => Auth::user()->organization_id != null || Auth::user()->vendor_id != null),
 
                 // Date Range Filters
                 Filter::make('tgl_pembuatan')
@@ -354,12 +356,12 @@ class MesinResource extends Resource
                                     })
                                     ->color('primary'),
 
-                                TextEntry::make('sekolah.nama')
-                                    ->label('Sekolah')
+                                TextEntry::make('organization.nama')
+                                    ->label('organization')
                                     ->icon('heroicon-m-building-library')
                                     ->url(function ($record) {
-                                        return $record->sekolah_id
-                                            ? route('filament.admin.resources.sekolahs.view', ['record' => $record->sekolah_id])
+                                        return $record->organization_id
+                                            ? route('filament.admin.resources.organizations.view', ['record' => $record->organization_id])
                                             : null;
                                     })
                                     ->color('info'),
@@ -432,11 +434,11 @@ class MesinResource extends Resource
 
         if ($user instanceof \App\Models\User) {
             if ($user && $user->hasRole('vendor')) {
-                // If user is 'vendor', filter by their sekolah_id
+                // If user is 'vendor', filter by their organization_id
                 $query->where('vendor_id', $user->vendor_id);
-            } elseif ($user && $user->hasRole('admin_sekolah') || $user->hasRole('staff_sekolah')) {
-                // If user is 'admin' or 'sekolah', filter by their sekolah_id
-                $query->where('sekolah_id', $user->sekolah_id);
+            } elseif ($user && $user->hasRole('admin_organization') || $user->hasRole('staff_organization')) {
+                // If user is 'admin' or 'organization', filter by their organization_id
+                $query->where('organization_id', $user->organization_id);
             }
         }
 

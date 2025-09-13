@@ -4,6 +4,9 @@ use App\Models\Siswa;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
+use App\Http\Controllers\LanguageController;
 // Route::get('/', function () {
 //     $siswa = Siswa::with(['uidType' => function($query) {
 //         $query->where('type', 'face_id');
@@ -48,3 +51,7 @@ Route::get('/profile', function () {
 Route::get('/login', function () {
     return redirect('/admin');
 })->name('login');
+
+
+
+Route::get('lang/{locale}', [LanguageController::class, 'switch'])->name('lang.switch');

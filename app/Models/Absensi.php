@@ -10,13 +10,13 @@ class Absensi extends Model
 {
     protected $guarded = [];
 
-    public function sekolah(): BelongsTo
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Sekolah::class);
+        return $this->belongsTo(Organization::class);
     }
 
-    public function siswa(): BelongsTo
+    public function members(): BelongsTo
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->belongsTo(Members::class);
     }
 }

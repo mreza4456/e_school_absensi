@@ -5,6 +5,7 @@ namespace App\Providers;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,15 +23,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Filament::serving(function () {
-            // Tambahkan hook ke awal topbar
-            Filament::registerRenderHook('panels::topbar.start', function () {
-                // Ambil nama sekolah, bisa dari database atau session
-                $schoolName = Auth::user()?->sekolah?->nama ?? null;
+            // 🔹 Hook untuk nama sekolah di awal topbar
+            Filament::registerRenderHook(
+                'panels::topbar.start',
+                fn () => view('components.custom-topbar-school', [
+                    'schoolName' => Auth::user()?->organization?->nama,
+                ]),
+            );
 
-                return view('components.custom-topbar-school', [
-                    'schoolName' => $schoolName,
-                ]);
-            });
+            // 🔹 Hook untuk language switcher di user menu
+          
         });
     }
 }

@@ -12,8 +12,8 @@ class UidType extends Model
 
     protected $guarded = ['id'];
 
-    public function siswa(): BelongsTo
+    public function members(): BelongsTo
     {
-        return $this->belongsTo(siswa::class);
+        return $this->belongsTo(Members::class);
     }
 }

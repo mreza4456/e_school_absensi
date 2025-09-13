@@ -31,11 +31,10 @@
  <p class="text-gray-500 mb-10">Tempelkan kartu Anda di mesin pembaca</p>
     <!-- Jam real-time -->
    
-<!-- 
-    <button onclick="tapCard()" 
+ <button onclick="tapCard()" 
       class="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
       Simulasikan Tap
-    </button> -->
+    </button> 
     <div id="status" class="mt-4 font-semibold"></div>
   </div>
   <script
@@ -64,7 +63,7 @@
         statusEl.textContent = "✅ Absen berhasil, mengalihkan...";
         statusEl.className = "mt-4 font-semibold text-green-600";
         setTimeout(() => {
-          window.location.href = "profile.html";
+          window.location.href = "profile";
         }, 1500);
       } else {
         statusEl.textContent = "❌ Absen gagal";

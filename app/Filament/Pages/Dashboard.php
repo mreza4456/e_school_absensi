@@ -11,13 +11,6 @@ use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
-
-    // public function filtersForm(Form $form): Form
-    // {
-    //     return $form
-    //         ->schema([
-    //             DatePicker::make('startDate'),
-    //             DatePicker::make('endDate'),
-    //         ]);
-    // }
+ protected static ?string $title = 'Dashboard';
+   
 }

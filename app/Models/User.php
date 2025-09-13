@@ -65,9 +65,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
-    public function sekolah(): BelongsTo
+    public function organization(): BelongsTo
     {
-        return $this->belongsTo(Sekolah::class);
+        return $this->belongsTo(Organization::class);
     }
 
     public function vendor(): BelongsTo

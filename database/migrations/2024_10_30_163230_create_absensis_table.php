@@ -15,11 +15,11 @@ return new class extends Migration
         Schema::create('absensis', function (Blueprint $table) {
             // $table->uuid('id')->primary()->default(Str::uuid());
             $table->id();
-            $table->foreignUuid('siswa_id')->nullable()->constrained('siswas')->cascadeOnDelete();
-            $table->foreignUuid('sekolah_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('members_id')->nullable()->constrained('members')->cascadeOnDelete();
+            $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->date('tanggal');
             $table->time('waktu');
-            $table->enum('keterangan', ['Masuk', 'Pulang', 'Terlambat', 'Izin', 'Sakit', 'Alpa'])->default('Alpa');
+            $table->enum('keterangan', ['Masuk', 'Pulang', 'Terlambat', 'Izin', 'Sakit', 'Alpa'])->default('Alpha');
             $table->timestamps();
         });
     }

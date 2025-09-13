@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('mesins', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('vendor_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('sekolah_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('organization_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('kode_mesin')->unique();
             $table->date('tgl_pembuatan')->nullable();
             $table->integer('idle')->nullable();

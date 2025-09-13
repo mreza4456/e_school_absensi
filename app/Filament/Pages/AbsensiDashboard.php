@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\AdminStaffSekolahAbsensiChart;
-use App\Filament\Widgets\AdminStaffSekolahAbsensiOverview;
-use App\Filament\Widgets\AdminStaffSekolahAnalisisAbsensi;
-use App\Filament\Widgets\AdminStaffSekolahSiswaSeringTerlambat;
-use App\Filament\Widgets\AdminStaffSekolahSiswaTerlambat;
-use App\Models\Kelas;
+use App\Filament\Widgets\AdminStaffOrganizationAbsensiChart;
+use App\Filament\Widgets\AdminStaffOrganizationAbsensiOverview;
+use App\Filament\Widgets\AdminStaffOrganizationAnalisisAbsensi;
+use App\Filament\Widgets\AdminStaffOrganizationSiswaSeringTerlambat;
+use App\Filament\Widgets\AdminStaffOrganizationSiswaTerlambat;
+use App\Models\Groups;
 use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -19,12 +19,13 @@ class AbsensiDashboard extends Page
 {
     use HasFiltersForm;
 
+    // default range konsisten dengan form default
     public $dateRange = '7_hari_terakhir';
-    public $kelas;
+    public ?int $groups = null;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static string $view = 'filament.pages.absensi-dashboard';
-    protected static ?string $title = 'Dasbor Absensi';
+    protected static ?string $title = 'Dashboard Attendance';
 
     public function filtersForm(Form $form): Form
     {
@@ -32,35 +33,49 @@ class AbsensiDashboard extends Page
             ->schema([
                 Select::make('dateRange')
                     ->options([
-                        'hari_ini' => 'Hari Ini',
-                        'kemarin' => 'Kemarin',
-                        '7_hari_terakhir' => '7 Hari Terakhir',
-                        '30_hari_terakhir' => '30 Hari Terakhir',
-                        'bulan_ini' => 'Bulan Ini',
-                        'bulan_lalu' => 'Bulan Lalu',
+                        'hari_ini' => 'Today',
+                        'kemarin' => 'Yesterday',
+                        '7_hari_terakhir' => 'Last 7 Days',
+                        '30_hari_terakhir' => 'Last 30 Days',
+                        'bulan_ini' => 'This Month',
+                        'bulan_lalu' => 'Last Month',
                     ])
-                    ->label('Rentang')
-                    ->default('hari_ini')
+                    ->label('Range')
+                    ->default($this->dateRange)
                     ->native(false)
                     ->live(),
-                Select::make('kelas')
-                    ->options(function() {
-                        $sekolah_id = Auth::user()->sekolah_id;
-                        return Kelas::where('sekolah_id', $sekolah_id)
-                            ->pluck('nama_kelas', 'id');
+
+                Select::make('groups')
+                    ->options(function () {
+                        $user = Auth::user();
+                        if (! $user) {
+                            return [];
+                        }
+                        $organization_id = $user->organization_id;
+                        if (! $organization_id) {
+                            return [];
+                        }
+
+                        return Groups::where('organization_id', $organization_id)
+                            ->pluck('groups_name', 'id')
+                            ->toArray();
                     })
+                    ->default($this->groups)
                     ->native(false)
                     ->searchable()
                     ->preload()
-                    ->label('Kelas')
-                    ->placeholder('Pilih Kelas'),
+                    ->label('Groups')
+                    ->placeholder('Choose Groups'),
             ]);
     }
 
     public static function canAccess(): bool
     {
         $user = Auth::user();
-        assert($user instanceof \App\Models\User);
-        return $user->hasRole(['admin_sekolah', 'staff_sekolah']);
+        if (! $user) {
+            return false;
+        }
+
+        return $user->hasRole(['admin_organization', 'staff_organization']);
     }
 }

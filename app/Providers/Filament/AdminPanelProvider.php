@@ -12,11 +12,12 @@ use App\Filament\Widgets\GlobalDeviceStatus;
 use App\Filament\Widgets\GlobalStatsOverview;
 use App\Filament\Widgets\KeterlambatanPerKelasChart;
 use App\Filament\Widgets\MesinStatsOverview;
-use App\Filament\Widgets\SchoolAbsensiOverview;
-use App\Filament\Widgets\SchoolClassOverview;
-use App\Filament\Widgets\SchoolDeviceStatus;
+use App\Filament\Widgets\OrganizationAbsensiOverview;
+use App\Filament\Widgets\OrganizationClassOverview;
+use App\Filament\Widgets\OrganizationDeviceStatus;
 use App\Filament\Widgets\VendorDeviceOverview;
-use App\Filament\Widgets\VendorSchoolOverview;
+use App\Filament\Widgets\VendorOrganizationOverview;
+
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -39,6 +40,8 @@ use Illuminate\Support\Facades\Auth;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Symfony\Component\Finder\Glob;
+use Livewire\Livewire;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -53,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
             // ->registration(Register::class)
             ->passwordReset()
             ->emailVerification()
-            ->brandName('eSchool')
+            ->brandName('eschool')
             ->sidebarCollapsibleOnDesktop(true)
             ->colors([
                 'primary' => Color::Amber,
@@ -70,36 +73,46 @@ class AdminPanelProvider extends PanelProvider
                 AbsensiDashboard::class,
             ])
             ->navigationGroups([
-                'Sekolah',
+                'Organization',
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label(fn () => Auth::user()->sekolah_id ? 'Profil Sekolah' : 'Profil Vendor')
-                    ->url(function () {
-                        if (Auth::user()->sekolah_id) {
-                            return route('filament.admin.resources.sekolahs.view', ['record' => Auth::user()->sekolah_id]);
-                        } elseif (Auth::user()->vendor_id) {
-                            return route('filament.admin.resources.vendors.view', ['record' => Auth::user()->vendor_id]);
-                        }
-                        return '#';
-                    })
-                    ->icon('heroicon-o-building-library')
-                    ->visible(fn () => Auth::user()->sekolah_id !== null || Auth::user()->vendor_id !== null),
-                'profile' => MenuItem::make()
-                    ->label(fn() => Auth::user()->name)
-                    ->url(fn (): string => EditProfilePage::getUrl())
-                    ->icon('heroicon-m-user-circle')
-                    //If you are using tenancy need to check with the visible method where ->company() is the relation between the user and tenancy model as you called
-                    ->visible(function (): bool {
-                        return Auth::user() !== null;
-                    }),
-            ])
+           ->userMenuItems([
+    MenuItem::make()
+        ->label(fn () => Auth::user()->organization_id ? 'Profile' : 'Profil Vendor')
+        ->url(function () {
+            if (Auth::user()->organization_id) {
+                return route('filament.admin.resources.organizations.view', ['record' => Auth::user()->organization_id]);
+            } elseif (Auth::user()->vendor_id) {
+                return route('filament.admin.resources.vendors.view', ['record' => Auth::user()->vendor_id]);
+            }
+            return '#';
+        })
+        ->icon('heroicon-o-building-library')
+        ->visible(fn () => Auth::user()->organization_id !== null || Auth::user()->vendor_id !== null),
+
+    'profile' => MenuItem::make()
+        ->label(fn() => Auth::user()->name)
+        ->url(fn (): string => EditProfilePage::getUrl())
+        ->icon('heroicon-m-user-circle')
+        ->visible(function (): bool {
+            return Auth::user() !== null;
+        }),
+
+        
+        
+        ])
+     ->renderHook(
+    'panels::user-menu.before',
+    function () {
+        // Langsung render blade component dari resources/views/components/language-switcher.blade.php
+        return view('components.language-switcher')->render();
+    }
+)
+
             ->breadcrumbs(false)
             ->spa()
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
+                // daftar widget secara kondisional di Filament::serving (lebih aman)
             ])
             ->middleware([
                 EncryptCookies::class,

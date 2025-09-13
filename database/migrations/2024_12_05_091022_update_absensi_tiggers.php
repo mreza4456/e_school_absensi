@@ -52,8 +52,8 @@ return new class extends Migration
 
             -- Get school timezone
             SELECT timezone INTO school_timezone
-            FROM sekolahs
-            WHERE id = NEW.sekolah_id;
+            FROM organizations
+            WHERE id = NEW.organization_id;
 
             -- Convert timezone
             SET input_datetime = CONVERT_TZ(CONCAT(NEW.tanggal, ' ', NEW.waktu), '+00:00',
@@ -69,7 +69,7 @@ return new class extends Migration
             FROM absensis
             WHERE uid = NEW.uid
             AND tanggal = DATE(input_datetime)
-            AND sekolah_id = NEW.sekolah_id
+            AND organization_id = NEW.organization_id
             AND keterangan IN ('Izin', 'Sakit', 'Alpa');
 
             IF existing_special_absensi > 0 THEN
@@ -83,7 +83,7 @@ return new class extends Migration
                 FROM absensis
                 WHERE uid = NEW.uid
                 AND tanggal = DATE(input_datetime)
-                AND sekolah_id = NEW.sekolah_id
+                AND organization_id = NEW.organization_id
                 AND keterangan = NEW.keterangan;
 
                 IF existing_special_absensi > 0 THEN
@@ -102,7 +102,7 @@ return new class extends Migration
                 SELECT jam_masuk, jam_masuk_selesai, jam_pulang
                 INTO jadwal_masuk, jadwal_masuk_selesai, jadwal_pulang
                 FROM jadwal_harians
-                WHERE sekolah_id = NEW.sekolah_id
+                WHERE organization_id = NEW.organization_id
                 AND hari = day_name;
 
                 -- Determine keterangan
@@ -123,7 +123,7 @@ return new class extends Migration
             FROM absensis
             WHERE uid = NEW.uid
             AND tanggal = DATE(input_datetime)
-            AND sekolah_id = NEW.sekolah_id
+            AND organization_id = NEW.organization_id
             AND (
                 keterangan = NEW.keterangan
                 OR (
@@ -161,8 +161,8 @@ return new class extends Migration
         BEGIN
             -- Get school timezone
             SELECT timezone INTO school_timezone
-            FROM sekolahs
-            WHERE id = NEW.sekolah_id;
+            FROM organizations
+            WHERE id = NEW.organization_id;
 
             -- Convert input datetime
             input_datetime := (NEW.tanggal || ' ' || NEW.waktu)::TIMESTAMP;
@@ -170,9 +170,9 @@ return new class extends Migration
             -- Check for existing special attendance (Izin, Sakit, Alpa)
             SELECT COUNT(*) INTO existing_special_absensi
             FROM absensis
-            WHERE siswa_id = NEW.siswa_id
+            WHERE members_id = NEW.members_id
             AND tanggal = input_datetime::DATE
-            AND sekolah_id = NEW.sekolah_id
+            AND organization_id = NEW.organization_id
             AND keterangan IN ('Izin', 'Sakit', 'Alpa');
 
             IF existing_special_absensi > 0 THEN
@@ -183,9 +183,9 @@ return new class extends Migration
             IF NEW.keterangan IN ('Izin', 'Sakit', 'Alpa') THEN
                 SELECT COUNT(*) INTO existing_special_absensi
                 FROM absensis
-                WHERE siswa_id = NEW.siswa_id
+                WHERE members_id = NEW.members_id
                 AND tanggal = input_datetime::DATE
-                AND sekolah_id = NEW.sekolah_id
+                AND organization_id = NEW.organization_id
                 AND keterangan = NEW.keterangan;
 
                 IF existing_special_absensi > 0  THEN
@@ -210,7 +210,7 @@ return new class extends Migration
                 SELECT jam_masuk, jam_masuk_selesai, jam_pulang
                 INTO jadwal_masuk, jadwal_masuk_selesai, jadwal_pulang
                 FROM jadwal_harians
-                WHERE sekolah_id = NEW.sekolah_id
+                WHERE organization_id = NEW.organization_id
                 AND hari = day_name;
 
                 -- Determine keterangan
@@ -228,9 +228,9 @@ return new class extends Migration
             -- Check for existing attendance
             SELECT COUNT(*) INTO existing_absensi
             FROM absensis
-            WHERE siswa_id = NEW.siswa_id
+            WHERE members_id = NEW.members_id
             AND tanggal = input_datetime::DATE
-            AND sekolah_id = NEW.sekolah_id
+            AND organization_id = NEW.organization_id
             AND (
                 keterangan = NEW.keterangan
                 OR (

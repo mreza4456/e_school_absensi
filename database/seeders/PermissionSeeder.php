@@ -100,84 +100,84 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 13,
-                "name" => "view_kelas",
+                "name" => "view_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 14,
-                "name" => "view_any_kelas",
+                "name" => "view_any_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 15,
-                "name" => "create_kelas",
+                "name" => "create_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 16,
-                "name" => "update_kelas",
+                "name" => "update_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 17,
-                "name" => "restore_kelas",
+                "name" => "restore_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 18,
-                "name" => "restore_any_kelas",
+                "name" => "restore_any_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 19,
-                "name" => "replicate_kelas",
+                "name" => "replicate_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 20,
-                "name" => "reorder_kelas",
+                "name" => "reorder_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 21,
-                "name" => "delete_kelas",
+                "name" => "delete_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 22,
-                "name" => "delete_any_kelas",
+                "name" => "delete_any_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 23,
-                "name" => "force_delete_kelas",
+                "name" => "force_delete_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 24,
-                "name" => "force_delete_any_kelas",
+                "name" => "force_delete_any_groups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
@@ -478,168 +478,168 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 67,
-                "name" => "view_sekolah",
+                "name" => "view_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 68,
-                "name" => "view_any_sekolah",
+                "name" => "view_any_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 69,
-                "name" => "create_sekolah",
+                "name" => "create_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 70,
-                "name" => "update_sekolah",
+                "name" => "update_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 71,
-                "name" => "restore_sekolah",
+                "name" => "restore_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 72,
-                "name" => "restore_any_sekolah",
+                "name" => "restore_any_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 73,
-                "name" => "replicate_sekolah",
+                "name" => "replicate_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 74,
-                "name" => "reorder_sekolah",
+                "name" => "reorder_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 75,
-                "name" => "delete_sekolah",
+                "name" => "delete_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 76,
-                "name" => "delete_any_sekolah",
+                "name" => "delete_any_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 77,
-                "name" => "force_delete_sekolah",
+                "name" => "force_delete_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 78,
-                "name" => "force_delete_any_sekolah",
+                "name" => "force_delete_any_organization",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 79,
-                "name" => "view_siswa",
+                "name" => "view_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 80,
-                "name" => "view_any_siswa",
+                "name" => "view_any_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 81,
-                "name" => "create_siswa",
+                "name" => "create_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 82,
-                "name" => "update_siswa",
+                "name" => "update_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 83,
-                "name" => "restore_siswa",
+                "name" => "restore_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:30.000Z",
                 "updated_at" => "2024-11-10T05:18:30.000Z"
             ],
             [
                 "id" => 84,
-                "name" => "restore_any_siswa",
+                "name" => "restore_any_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 85,
-                "name" => "replicate_siswa",
+                "name" => "replicate_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 86,
-                "name" => "reorder_siswa",
+                "name" => "reorder_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 87,
-                "name" => "delete_siswa",
+                "name" => "delete_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 88,
-                "name" => "delete_any_siswa",
+                "name" => "delete_any_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 89,
-                "name" => "force_delete_siswa",
+                "name" => "force_delete_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 90,
-                "name" => "force_delete_any_siswa",
+                "name" => "force_delete_any_members",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
@@ -912,28 +912,28 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 129,
-                "name" => "widget_SekolahOverview",
+                "name" => "widget_OrganizationOverview",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 130,
-                "name" => "widget_SekolahChart",
+                "name" => "widget_OrganizationChart",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 131,
-                "name" => "widget_SekolahKelasSiswa",
+                "name" => "widget_OrganizationMembersGroups",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 132,
-                "name" => "widget_SiswaTerlambatChart",
+                "name" => "widget_MembersLate",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
@@ -947,7 +947,7 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 134,
-                "name" => "widget_JenisKelaminSiswa",
+                "name" => "widget_MembersGender",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
@@ -975,14 +975,14 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 138,
-                "name" => "widget_SiswaPalingSeringTerlambat",
+                "name" => "widget_MembersOftenLate",
                 "guard_name" => "web",
                 "created_at" => "2024-11-10T05:18:31.000Z",
                 "updated_at" => "2024-11-10T05:18:31.000Z"
             ],
             [
                 "id" => 139,
-                "name" => "widget_SuperAdminStaffSekolahChart",
+                "name" => "widget_SuperAdminStaffOrganizationChart",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:11:03.000Z",
                 "updated_at" => "2024-11-12T20:11:03.000Z"
@@ -1017,42 +1017,42 @@ class PermissionSeeder extends Seeder
             ],
             [
                 "id" => 144,
-                "name" => "widget_AdminStaffSekolahStatsOverview",
+                "name" => "widget_AdminStaffOrganizationStatsOverview",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
             ],
             [
                 "id" => 145,
-                "name" => "widget_AdminStaffSekolahSiswaTerlambat",
+                "name" => "widget_AdminStaffOrganizationMembersLate",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
             ],
             [
                 "id" => 146,
-                "name" => "widget_AdminStaffSekolahSiswaSeringTerlambat",
+                "name" => "widget_AdminStaffOrganizationMembersOftenLate",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
             ],
             [
                 "id" => 147,
-                "name" => "widget_AdminStaffSekolahSiswaJkChart",
+                "name" => "widget_AdminStaffOrganizationMembersGenderChart",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
             ],
             [
                 "id" => 148,
-                "name" => "widget_AdminStaffSekolahSiswaKelas",
+                "name" => "widget_AdminStaffOrganizationMembersGroupsChart",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
             ],
             [
                 "id" => 149,
-                "name" => "widget_AdminStaffSekolahMesinChart",
+                "name" => "widget_AdminStaffOrganizationMesinChart",
                 "guard_name" => "web",
                 "created_at" => "2024-11-12T20:46:13.000Z",
                 "updated_at" => "2024-11-12T20:46:13.000Z"
