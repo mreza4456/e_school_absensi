@@ -36,7 +36,7 @@ class Mesin extends Model
     private static function setKeterangan(Mesin $mesin): void
     {
         if ($mesin->status) {
-            $mesin->keterangan = $mesin->sekolah_id ? 'Sudah Aktif' : 'Belum Diset';
+            $mesin->keterangan = $mesin->organizaion_id ? 'Sudah Aktif' : 'Belum Diset';
         } else {
             $mesin->keterangan = 'Tidak Aktif';
         }
@@ -47,9 +47,9 @@ class Mesin extends Model
         return $this->belongsTo(Vendor::class);
     }
 
-    public function sekolah(): BelongsTo
+    public function organizaion(): BelongsTo
     {
-        return $this->belongsTo(Sekolah::class);
+        return $this->belongsTo(Organization::class);
     }
 
     public function wifi(): HasOne
